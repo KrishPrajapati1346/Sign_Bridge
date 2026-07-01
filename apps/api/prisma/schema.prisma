@@ -1,0 +1,215 @@
+// SignBridge database schema.
+//
+// Phase 1 establishes only the foundational models needed to prove the
+// database wiring end-to-end. Authentication fields, conversation history,
+// sign vocabulary, and learning-progress models are introduced in later
+// phases (2, 4, 5, 11) so each migration maps cleanly to a delivered feature.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  DEAF_USER
+  HEARING_USER
+  LEARNER
+  ADMIN
+}
+
+enum TextScale {
+  NORMAL
+  LARGE
+  LARGER
+}
+
+enum ConversationMode {
+  SPEECH // this phase
+  LIVE // Phase 6
+  VIDEO // Phase 9
+}
+
+enum MessageModality {
+  SPEECH
+  TEXT
+  SIGN
+  AVATAR
+}
+
+enum MessageSender {
+  USER
+  PARTNER
+}
+
+enum LessonStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  passwordHash  String
+  role          Role           @default(HEARING_USER)
+  refreshTokens     RefreshToken[]
+  settings          UserSettings?
+  conversations     Conversation[]
+  signSamples       SignSample[]
+  emergencyContacts EmergencyContact[]
+  quickPhrases      QuickPhrase[]
+  emergencyEvents   EmergencyEvent[]
+  lessonProgress    LessonProgress[]
+  signMastery       SignMastery[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  xp                Int                @default(0)
+  streakDays        Int                @default(0)
+  lastActiveAt      DateTime?
+
+  @@map("users")
+}
+
+model UserSettings {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  interfaceLanguage String    @default("en") // 'en' | 'hi' | 'gu'
+  textScale         TextScale @default(NORMAL)
+  highContrast      Boolean   @default(false)
+  reduceMotion      Boolean   @default(false)
+  captionsEnabled   Boolean   @default(true) // used by later phases
+  updatedAt         DateTime  @updatedAt
+
+  @@map("user_settings")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Conversation {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String?
+  mode      ConversationMode @default(SPEECH)
+  messages  Message[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([userId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String          @id @default(cuid())
+  conversationId String
+  conversation   Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         MessageSender   @default(USER)
+  modality       MessageModality
+  language       String          @default("en") // 'en' | 'hi' | 'gu'
+  content        String
+  createdAt      DateTime        @default(now())
+
+  @@index([conversationId])
+  @@map("messages")
+}
+
+model SignSample {
+  id        String   @id @default(cuid())
+  label     String
+  // Fixed-length normalized feature vector (see feature spec), stored as JSON.
+  features  Json
+  handCount Int // 1 or 2 hands present when captured
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([label])
+  @@index([userId])
+  @@map("sign_samples")
+}
+
+model EmergencyContact {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  phone     String
+  relation  String?
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("emergency_contacts")
+}
+
+model QuickPhrase {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  language  String   @default("en") // en | hi | gu
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("quick_phrases")
+}
+
+model EmergencyEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  language  String   @default("en")
+  channel   String   @default("spoken") // spoken | displayed | contact
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("emergency_events")
+}
+
+model LessonProgress {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  String
+  status    LessonStatus @default(IN_PROGRESS)
+  score     Int? // last quiz score for this lesson (percent), if taken
+  updatedAt DateTime     @updatedAt
+
+  @@unique([userId, lessonId])
+  @@index([userId])
+  @@map("lesson_progress")
+}
+
+model SignMastery {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label        String
+  attemptCount Int      @default(0)
+  correctCount Int      @default(0)
+  updatedAt    DateTime @updatedAt
+
+  @@unique([userId, label])
+  @@index([userId])
+  @@map("sign_mastery")
+}

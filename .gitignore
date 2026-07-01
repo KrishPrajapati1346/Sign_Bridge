@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+.next/
+out/
+build/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Prisma
+prisma/migrations/dev.db*
+
+# Python (ML service)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+coverage/
+
+# Turbo
+.turbo/
+
+# Trained ISL model artifacts (generated offline by services/ml/app/train_isl.py).
+# We want these checked into Git so Vercel can host them in production!
+# /apps/web/public/models/isl/*
+!/apps/web/public/models/isl/.gitkeep
+services/ml/isl_dataset/
