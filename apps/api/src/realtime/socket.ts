@@ -4,7 +4,6 @@ import type { SignalMessage } from '@signbridge/shared-types';
 import { env } from '../config/env.js';
 import { verifyAccessToken } from '../lib/jwt.js';
 
-const MAX_PER_ROOM = 2;
 
 interface SocketUser {
   userId: string;
