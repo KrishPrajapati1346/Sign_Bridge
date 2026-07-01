@@ -39,7 +39,7 @@ import { useSocket } from '@/lib/socket-context';
 import { audioManager } from '@/lib/call/audio-manager';
 import { AddParticipantModal } from '@/components/AddParticipantModal';
 
-function RemoteVideo({ peerId, stream, captionsEnabled, caption, signEnabled, sign, t }: any) {
+function RemoteVideo({ stream, captionsEnabled, caption, signEnabled, sign, t }: any) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
