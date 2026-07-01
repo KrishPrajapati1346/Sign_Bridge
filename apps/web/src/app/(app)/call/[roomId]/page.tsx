@@ -83,7 +83,7 @@ export default function CallRoomPage({ params, searchParams }: { params: { roomI
   const t = useT();
   const call = useMeshCall(params.roomId);
   const { socket } = useSocket();
-  const { accessToken, loading } = useAuth();
+  const { accessToken, isLoading } = useAuth();
   const startedRef = useRef(false);
   const [rejected, setRejected] = useState(false);
 
@@ -126,7 +126,7 @@ export default function CallRoomPage({ params, searchParams }: { params: { roomI
   // Start once socket is ready (or if we know they aren't signed in, so we can show the auth error).
   useEffect(() => {
     if (startedRef.current) return;
-    if (!loading && !accessToken) {
+    if (!isLoading && !accessToken) {
       startedRef.current = true;
       void call.start();
       return;
@@ -139,7 +139,7 @@ export default function CallRoomPage({ params, searchParams }: { params: { roomI
     return () => {
       startedRef.current = false;
     };
-  }, [socket, call.start, loading, accessToken]);
+  }, [socket, call.start, isLoading, accessToken]);
 
   const statusRef = useRef(call.status);
   
