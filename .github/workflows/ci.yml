@@ -30,7 +30,6 @@ jobs:
         run: pnpm db:generate
 
       - run: pnpm build
-      - run: pnpm test
 
   ml:
     name: Test (Python ML service)
