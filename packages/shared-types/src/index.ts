@@ -9,7 +9,15 @@
 /** Supported interface and translation languages for the MVP. */
 export type LanguageCode = 'en' | 'hi' | 'gu' | 'mr' | 'bn' | 'ta' | 'te';
 
-export const SUPPORTED_LANGUAGES: readonly LanguageCode[] = ['en', 'hi', 'gu', 'mr', 'bn', 'ta', 'te'] as const;
+export const SUPPORTED_LANGUAGES: readonly LanguageCode[] = [
+  'en',
+  'hi',
+  'gu',
+  'mr',
+  'bn',
+  'ta',
+  'te',
+] as const;
 
 /** The communication media SignBridge bridges between. */
 export type Modality = 'sign' | 'speech' | 'text' | 'avatar';
@@ -340,7 +348,15 @@ export const EMERGENCY_PHRASES: BuiltInPhrase[] = [
   {
     id: 'need-help',
     icon: 'CircleHelp',
-    text: { en: 'I need help', hi: 'मुझे मदद चाहिए', gu: 'મને મદદ જોઈએ છે', mr: 'मला मदत हवी आहे', bn: 'আমার সাহায্য দরকার', ta: 'எனக்கு உதவி வேண்டும்', te: 'నాకు సహాయం కావాలి' },
+    text: {
+      en: 'I need help',
+      hi: 'मुझे मदद चाहिए',
+      gu: 'મને મદદ જોઈએ છે',
+      mr: 'मला मदत हवी आहे',
+      bn: 'আমার সাহায্য দরকার',
+      ta: 'எனக்கு உதவி வேண்டும்',
+      te: 'నాకు సహాయం కావాలి',
+    },
   },
   {
     id: 'call-ambulance',
@@ -371,7 +387,15 @@ export const EMERGENCY_PHRASES: BuiltInPhrase[] = [
   {
     id: 'need-doctor',
     icon: 'Stethoscope',
-    text: { en: 'I need a doctor', hi: 'मुझे डॉक्टर चाहिए', gu: 'મને ડૉક્ટરની જરૂર છે', mr: 'मला डॉक्टरांची गरज आहे', bn: 'আমার একজন ডাক্তার দরকার', ta: 'எனக்கு ஒரு மருத்துவர் வேண்டும்', te: 'నాకు డాక్టర్ కావాలి' },
+    text: {
+      en: 'I need a doctor',
+      hi: 'मुझे डॉक्टर चाहिए',
+      gu: 'મને ડૉક્ટરની જરૂર છે',
+      mr: 'मला डॉक्टरांची गरज आहे',
+      bn: 'আমার একজন ডাক্তার দরকার',
+      ta: 'எனக்கு ஒரு மருத்துவர் வேண்டும்',
+      te: 'నాకు డాక్టర్ కావాలి',
+    },
   },
   {
     id: 'call-police',
@@ -389,32 +413,80 @@ export const EMERGENCY_PHRASES: BuiltInPhrase[] = [
   {
     id: 'fire',
     icon: 'Flame',
-    text: { en: 'There is a fire', hi: 'आग लगी है', gu: 'આગ લાગી છે', mr: 'तिथे आग लागली आहे', bn: 'এখানে আগুন লেগেছে', ta: 'இங்கே தீ விபத்து ஏற்பட்டுள்ளது', te: 'అక్కడ మంటలు ఉన్నాయి' },
+    text: {
+      en: 'There is a fire',
+      hi: 'आग लगी है',
+      gu: 'આગ લાગી છે',
+      mr: 'तिथे आग लागली आहे',
+      bn: 'এখানে আগুন লেগেছে',
+      ta: 'இங்கே தீ விபத்து ஏற்பட்டுள்ளது',
+      te: 'అక్కడ మంటలు ఉన్నాయి',
+    },
   },
   {
     id: 'lost',
     icon: 'MapPin',
-    text: { en: 'I am lost', hi: 'मैं रास्ता भटक गया हूँ', gu: 'હું રસ્તો ભૂલી ગયો છું', mr: 'मी हरवलो आहे', bn: 'আমি হারিয়ে গেছি', ta: 'நான் வழி தவறிவிட்டேன்', te: 'నేను దారి తప్పాను' },
+    text: {
+      en: 'I am lost',
+      hi: 'मैं रास्ता भटक गया हूँ',
+      gu: 'હું રસ્તો ભૂલી ગયો છું',
+      mr: 'मी हरवलो आहे',
+      bn: 'আমি হারিয়ে গেছি',
+      ta: 'நான் வழி தவறிவிட்டேன்',
+      te: 'నేను దారి తప్పాను',
+    },
   },
   {
     id: 'cannot-breathe',
     icon: 'Wind',
-    text: { en: 'I cannot breathe', hi: 'मुझे साँस नहीं आ रही', gu: 'મને શ્વાસ લેવામાં તકલીફ છે', mr: 'मला श्वास घेता येत नाहीये', bn: 'আমি শ্বাস নিতে পারছি না', ta: 'என்னால் சுவாசிக்க முடியவில்லை', te: 'నాకు ఊపిరి ఆడటం లేదు' },
+    text: {
+      en: 'I cannot breathe',
+      hi: 'मुझे साँस नहीं आ रही',
+      gu: 'મને શ્વાસ લેવામાં તકલીફ છે',
+      mr: 'मला श्वास घेता येत नाहीये',
+      bn: 'আমি শ্বাস নিতে পারছি না',
+      ta: 'என்னால் சுவாசிக்க முடியவில்லை',
+      te: 'నాకు ఊపిరి ఆడటం లేదు',
+    },
   },
   {
     id: 'injured',
     icon: 'Bandage',
-    text: { en: 'I am injured', hi: 'मैं घायल हूँ', gu: 'હું ઘાયલ છું', mr: 'मी जखमी झालो आहे', bn: 'আমি আহত হয়েছি', ta: 'நான் காயமடைந்துள்ளேன்', te: 'నేను గాయపడ్డాను' },
+    text: {
+      en: 'I am injured',
+      hi: 'मैं घायल हूँ',
+      gu: 'હું ઘાયલ છું',
+      mr: 'मी जखमी झालो आहे',
+      bn: 'আমি আহত হয়েছি',
+      ta: 'நான் காயமடைந்துள்ளேன்',
+      te: 'నేను గాయపడ్డాను',
+    },
   },
   {
     id: 'write-it-down',
     icon: 'PenLine',
-    text: { en: 'Please write it down', hi: 'कृपया इसे लिख दें', gu: 'કૃપા કરીને તે લખી આપો', mr: 'कृपया हे लिहून द्या', bn: 'দয়া করে এটি লিখে দিন', ta: 'இதை எழுதித் தரவும்', te: 'దయచేసి దీన్ని రాసి ఇవ్వండి' },
+    text: {
+      en: 'Please write it down',
+      hi: 'कृपया इसे लिख दें',
+      gu: 'કૃપા કરીને તે લખી આપો',
+      mr: 'कृपया हे लिहून द्या',
+      bn: 'দয়া করে এটি লিখে দিন',
+      ta: 'இதை எழுதித் தரவும்',
+      te: 'దయచేసి దీన్ని రాసి ఇవ్వండి',
+    },
   },
   {
     id: 'need-medication',
     icon: 'Pill',
-    text: { en: 'I need my medication', hi: 'मुझे मेरी दवा चाहिए', gu: 'મને મારી દવા જોઈએ છે', mr: 'मला माझी औषधे हवी आहेत', bn: 'আমার ঔষধ দরকার', ta: 'எனக்கு என் மருந்துகள் வேண்டும்', te: 'నాకు మందులు కావాలి' },
+    text: {
+      en: 'I need my medication',
+      hi: 'मुझे मेरी दवा चाहिए',
+      gu: 'મને મારી દવા જોઈએ છે',
+      mr: 'मला माझी औषधे हवी आहेत',
+      bn: 'আমার ঔষধ দরকার',
+      ta: 'எனக்கு என் மருந்துகள் வேண்டும்',
+      te: 'నాకు మందులు కావాలి',
+    },
   },
   {
     id: 'help-communicate',

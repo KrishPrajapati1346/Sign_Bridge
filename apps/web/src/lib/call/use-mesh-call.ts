@@ -45,7 +45,7 @@ export function useMeshCall(roomId: string) {
   const [status, setStatus] = useState<CallStatus>('idle');
   const [error, setError] = useState<string | null>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
-  
+
   // Mesh Network state
   const [remoteStreams, setRemoteStreams] = useState<Record<string, MediaStream>>({});
   const [captions, setCaptions] = useState<Record<string, string>>({});
@@ -94,9 +94,10 @@ export function useMeshCall(roomId: string) {
     (text: string) => {
       broadcastToPeers({ kind: 'caption', text, language: lang, final: true });
       persist('SPEECH', text);
-      
+
       setCaptions((prev) => ({ ...prev, local: text }));
-      if (remoteCaptionDebounceRef.current['local']) clearTimeout(remoteCaptionDebounceRef.current['local']);
+      if (remoteCaptionDebounceRef.current['local'])
+        clearTimeout(remoteCaptionDebounceRef.current['local']);
       remoteCaptionDebounceRef.current['local'] = setTimeout(() => {
         setCaptions((prev) => {
           const next = { ...prev };
@@ -119,8 +120,9 @@ export function useMeshCall(roomId: string) {
         final: false,
       });
       setCaptions((prev) => ({ ...prev, local: stt.interimText }));
-      
-      if (remoteCaptionDebounceRef.current['local']) clearTimeout(remoteCaptionDebounceRef.current['local']);
+
+      if (remoteCaptionDebounceRef.current['local'])
+        clearTimeout(remoteCaptionDebounceRef.current['local']);
       remoteCaptionDebounceRef.current['local'] = setTimeout(() => {
         setCaptions((prev) => {
           const next = { ...prev };
@@ -154,15 +156,16 @@ export function useMeshCall(roomId: string) {
     if (signBufferRef.current.length === 0) return;
     const words = [...signBufferRef.current];
     signBufferRef.current = [];
-    
+
     const sentence = await reconstructGrammar(authFetch, words, lang);
     broadcastToPeers({ kind: 'sign', text: sentence, final: true });
     persist('SIGN', sentence);
-    
+
     setRemoteSigns((prev) => ({ ...prev, local: sentence }));
-    
+
     // Clear local sign after 5s
-    if (remoteSignDebounceRef.current['local']) clearTimeout(remoteSignDebounceRef.current['local']);
+    if (remoteSignDebounceRef.current['local'])
+      clearTimeout(remoteSignDebounceRef.current['local']);
     remoteSignDebounceRef.current['local'] = setTimeout(() => {
       setRemoteSigns((prev) => {
         const next = { ...prev };
@@ -175,7 +178,7 @@ export function useMeshCall(roomId: string) {
   const startSignLoop = useCallback(async () => {
     if (!localStreamRef.current || signIntervalRef.current) return;
     const loaded = await loadClassifier();
-    if (!loaded) return; 
+    if (!loaded) return;
     const landmarker = await getHandLandmarker();
 
     const video = document.createElement('video');
@@ -202,7 +205,7 @@ export function useMeshCall(roomId: string) {
             if (pred.label !== lastSignRef.current) {
               lastSignRef.current = pred.label;
               const text = displayLabel(pred.label);
-              
+
               signBufferRef.current.push(text);
               broadcastToPeers({ kind: 'sign', text, final: false });
 
@@ -211,7 +214,7 @@ export function useMeshCall(roomId: string) {
                 const next = current ? current + ' ' + text : text;
                 return { ...prev, local: next };
               });
-              
+
               if (signDebounceRef.current) clearTimeout(signDebounceRef.current);
               signDebounceRef.current = setTimeout(() => {
                 void flushSignBuffer();
@@ -237,7 +240,7 @@ export function useMeshCall(roomId: string) {
       peer.close();
       peersRef.current.delete(peerId);
     }
-    
+
     setRemoteStreams((prev) => {
       const next = { ...prev };
       delete next[peerId];
@@ -259,100 +262,111 @@ export function useMeshCall(roomId: string) {
     }
   }, []);
 
-  const makePeer = useCallback((peerId: string): PeerConnection => {
-    const signaling = signalingRef.current!;
-    const peer = new PeerConnection(iceServersRef.current, {
-      onRemoteStream: (stream) => {
-        setRemoteStreams((prev) => ({ ...prev, [peerId]: stream }));
-        setStatus('connected');
-      },
-      onData: (msg: CallDataMessage) => {
-        if (msg.kind === 'caption') {
-          const updateCaption = (text: string, isFinal: boolean) => {
-            setCaptions((prev) => ({ ...prev, [peerId]: text }));
-            
-            if (remoteCaptionDebounceRef.current[peerId]) clearTimeout(remoteCaptionDebounceRef.current[peerId]);
-            remoteCaptionDebounceRef.current[peerId] = setTimeout(() => {
-              setCaptions((prev) => {
-                const next = { ...prev };
-                delete next[peerId];
-                return next;
-              });
-            }, isFinal ? 5000 : 2500);
-          };
+  const makePeer = useCallback(
+    (peerId: string): PeerConnection => {
+      const signaling = signalingRef.current!;
+      const peer = new PeerConnection(iceServersRef.current, {
+        onRemoteStream: (stream) => {
+          setRemoteStreams((prev) => ({ ...prev, [peerId]: stream }));
+          setStatus('connected');
+        },
+        onData: (msg: CallDataMessage) => {
+          if (msg.kind === 'caption') {
+            const updateCaption = (text: string, isFinal: boolean) => {
+              setCaptions((prev) => ({ ...prev, [peerId]: text }));
 
-          if (msg.language !== lang) {
-            if (msg.final) {
-              updateCaption(`${msg.text} (Translating...)`, false); // Keep alive during translation
-              void translate(authFetch, { text: msg.text, from: msg.language, to: lang }).then((res) => {
-                updateCaption(res.text, true);
-                persist('SPEECH', res.text, 'PARTNER');
-              });
+              if (remoteCaptionDebounceRef.current[peerId])
+                clearTimeout(remoteCaptionDebounceRef.current[peerId]);
+              remoteCaptionDebounceRef.current[peerId] = setTimeout(
+                () => {
+                  setCaptions((prev) => {
+                    const next = { ...prev };
+                    delete next[peerId];
+                    return next;
+                  });
+                },
+                isFinal ? 5000 : 2500,
+              );
+            };
+
+            if (msg.language !== lang) {
+              if (msg.final) {
+                updateCaption(`${msg.text} (Translating...)`, false); // Keep alive during translation
+                void translate(authFetch, { text: msg.text, from: msg.language, to: lang }).then(
+                  (res) => {
+                    updateCaption(res.text, true);
+                    persist('SPEECH', res.text, 'PARTNER');
+                  },
+                );
+              } else {
+                updateCaption(msg.text, false);
+              }
             } else {
-              updateCaption(msg.text, false);
+              updateCaption(msg.text, msg.final);
+              if (msg.final) persist('SPEECH', msg.text, 'PARTNER');
             }
           } else {
-            updateCaption(msg.text, msg.final);
-            if (msg.final) persist('SPEECH', msg.text, 'PARTNER');
-          }
-        } else {
-          if (msg.final) {
-            setRemoteSigns((prev) => ({ ...prev, [peerId]: msg.text }));
-            persist('SIGN', msg.text, 'PARTNER');
-            
-            if (remoteSignDebounceRef.current[peerId]) clearTimeout(remoteSignDebounceRef.current[peerId]);
-            remoteSignDebounceRef.current[peerId] = setTimeout(() => {
+            if (msg.final) {
+              setRemoteSigns((prev) => ({ ...prev, [peerId]: msg.text }));
+              persist('SIGN', msg.text, 'PARTNER');
+
+              if (remoteSignDebounceRef.current[peerId])
+                clearTimeout(remoteSignDebounceRef.current[peerId]);
+              remoteSignDebounceRef.current[peerId] = setTimeout(() => {
+                setRemoteSigns((prev) => {
+                  const next = { ...prev };
+                  delete next[peerId];
+                  return next;
+                });
+              }, 5000); // Keep the final sentence visible for 5s
+            } else {
               setRemoteSigns((prev) => {
-                const next = { ...prev };
-                delete next[peerId];
-                return next;
+                const current = prev[peerId];
+                const next = current ? current + ' ' + msg.text : msg.text;
+                return { ...prev, [peerId]: next };
               });
-            }, 5000); // Keep the final sentence visible for 5s
-          } else {
-            setRemoteSigns((prev) => {
-              const current = prev[peerId];
-              const next = current ? current + ' ' + msg.text : msg.text;
-              return { ...prev, [peerId]: next };
-            });
-            // Clear interim sign after 2.5s if no more updates come in
-            if (remoteSignDebounceRef.current[peerId]) clearTimeout(remoteSignDebounceRef.current[peerId]);
-            remoteSignDebounceRef.current[peerId] = setTimeout(() => {
-              setRemoteSigns((prev) => {
-                const next = { ...prev };
-                delete next[peerId];
-                return next;
-              });
-            }, 2500);
+              // Clear interim sign after 2.5s if no more updates come in
+              if (remoteSignDebounceRef.current[peerId])
+                clearTimeout(remoteSignDebounceRef.current[peerId]);
+              remoteSignDebounceRef.current[peerId] = setTimeout(() => {
+                setRemoteSigns((prev) => {
+                  const next = { ...prev };
+                  delete next[peerId];
+                  return next;
+                });
+              }, 2500);
+            }
           }
-        }
-      },
-      onSignal: (msg) => signaling.sendSignal({ ...msg, toId: peerId }),
-      onConnectionState: (state) => {
-        if (state === 'connected') setStatus('connected');
-        else if (state === 'disconnected' || state === 'failed') {
-          removePeer(peerId);
-        }
-      },
-    });
-    
-    if (localStreamRef.current) peer.addLocalStream(localStreamRef.current);
-    peersRef.current.set(peerId, peer);
-    return peer;
-  }, [authFetch, lang, persist, removePeer]);
+        },
+        onSignal: (msg) => signaling.sendSignal({ ...msg, toId: peerId }),
+        onConnectionState: (state) => {
+          if (state === 'connected') setStatus('connected');
+          else if (state === 'disconnected' || state === 'failed') {
+            removePeer(peerId);
+          }
+        },
+      });
+
+      if (localStreamRef.current) peer.addLocalStream(localStreamRef.current);
+      peersRef.current.set(peerId, peer);
+      return peer;
+    },
+    [authFetch, lang, persist, removePeer],
+  );
 
   const start = useCallback(async () => {
     if (startBusyRef.current) return;
-    
+
     if (!accessToken) {
       setError('You need to be signed in to start a call.');
       setStatus('error');
       return;
     }
-    
+
     startBusyRef.current = true;
     setStatus('connecting');
     setError(null);
-    
+
     const sessionId = ++startSessionRef.current;
 
     try {
@@ -386,7 +400,9 @@ export function useMeshCall(roomId: string) {
         if (e.name === 'NotFoundError' || e.message?.includes('Requested device not found')) {
           // Fallback: Try just video, then just audio
           try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'user' } } });
+            stream = await navigator.mediaDevices.getUserMedia({
+              video: { facingMode: { ideal: 'user' } },
+            });
           } catch (e2) {
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           }
@@ -404,7 +420,11 @@ export function useMeshCall(roomId: string) {
     } catch (err: any) {
       const name = err instanceof DOMException ? err.name : '';
       const msg = err.message || String(err);
-      setError(name === 'NotAllowedError' ? 'Camera/microphone access is blocked.' : `Could not access camera/mic: ${name} - ${msg}`);
+      setError(
+        name === 'NotAllowedError'
+          ? 'Camera/microphone access is blocked.'
+          : `Could not access camera/mic: ${name} - ${msg}`,
+      );
       setStatus('error');
       startBusyRef.current = false;
       return;
@@ -443,7 +463,7 @@ export function useMeshCall(roomId: string) {
 
       void (async () => {
         const peer = peersRef.current.get(fromId) ?? makePeer(fromId);
-        
+
         if (msg.type === 'offer') {
           const answer = await peer.handleOffer(msg.sdp);
           signaling.sendSignal({ ...answer, toId: fromId });
@@ -500,34 +520,43 @@ export function useMeshCall(roomId: string) {
 
   const toggleScreenShare = useCallback(async () => {
     if (!localStreamRef.current) return;
-    
+
     if (screenEnabled) {
       const cameraTrack = cameraTrackRef.current;
       if (cameraTrack) {
-         peersRef.current.forEach(peer => peer.replaceVideoTrack(cameraTrack));
-         const newStream = new MediaStream([cameraTrack, ...localStreamRef.current!.getAudioTracks()]);
-         localStreamRef.current = newStream;
-         setLocalStream(newStream);
-         setScreenEnabled(false);
+        peersRef.current.forEach((peer) => peer.replaceVideoTrack(cameraTrack));
+        const newStream = new MediaStream([
+          cameraTrack,
+          ...localStreamRef.current!.getAudioTracks(),
+        ]);
+        localStreamRef.current = newStream;
+        setLocalStream(newStream);
+        setScreenEnabled(false);
       }
     } else {
       try {
         const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         const screenTrack = screenStream.getVideoTracks()[0];
-        
+
         screenTrack.onended = () => {
           const cameraTrack = cameraTrackRef.current;
           if (cameraTrack && localStreamRef.current) {
-            peersRef.current.forEach(peer => peer.replaceVideoTrack(cameraTrack));
-            const newStream = new MediaStream([cameraTrack, ...localStreamRef.current.getAudioTracks()]);
+            peersRef.current.forEach((peer) => peer.replaceVideoTrack(cameraTrack));
+            const newStream = new MediaStream([
+              cameraTrack,
+              ...localStreamRef.current.getAudioTracks(),
+            ]);
             localStreamRef.current = newStream;
             setLocalStream(newStream);
             setScreenEnabled(false);
           }
         };
 
-        peersRef.current.forEach(peer => peer.replaceVideoTrack(screenTrack));
-        const newStream = new MediaStream([screenTrack, ...localStreamRef.current.getAudioTracks()]);
+        peersRef.current.forEach((peer) => peer.replaceVideoTrack(screenTrack));
+        const newStream = new MediaStream([
+          screenTrack,
+          ...localStreamRef.current.getAudioTracks(),
+        ]);
         localStreamRef.current = newStream;
         setLocalStream(newStream);
         setScreenEnabled(true);

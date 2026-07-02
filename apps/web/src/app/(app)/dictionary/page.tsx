@@ -13,12 +13,12 @@ export default function DictionaryPage() {
   const [selectedWord, setSelectedWord] = useState<string | null>(null);
 
   // Alphabetically sort the vocabulary based on their display labels
-  const allWords = [...ISL_VOCABULARY].sort((a, b) => 
-    displayLabel(a).localeCompare(displayLabel(b))
+  const allWords = [...ISL_VOCABULARY].sort((a, b) =>
+    displayLabel(a).localeCompare(displayLabel(b)),
   );
 
-  const filtered = allWords.filter((word) => 
-    displayLabel(word).toLowerCase().includes(query.toLowerCase())
+  const filtered = allWords.filter((word) =>
+    displayLabel(word).toLowerCase().includes(query.toLowerCase()),
   );
 
   return (
@@ -26,8 +26,8 @@ export default function DictionaryPage() {
       <PageHeader title="Dictionary" context="Browse the Indian Sign Language vocabulary" />
 
       <div className="mb-8">
-        <Link 
-          href="/learn" 
+        <Link
+          href="/learn"
           className="group flex flex-col sm:flex-row items-center justify-between gap-6 rounded-2xl border border-signal/20 bg-signal/5 p-6 transition-all hover:bg-signal/10 hover:border-signal/30"
         >
           <div className="flex items-center gap-5">
@@ -36,7 +36,10 @@ export default function DictionaryPage() {
             </div>
             <div>
               <h2 className="font-display text-xl font-bold text-ink">Learn ISL</h2>
-              <p className="mt-1 text-sm text-muted max-w-md">Ready to master Indian Sign Language? Take our structured courses, practice your skills, and track your progress.</p>
+              <p className="mt-1 text-sm text-muted max-w-md">
+                Ready to master Indian Sign Language? Take our structured courses, practice your
+                skills, and track your progress.
+              </p>
             </div>
           </div>
           <div className="btn-primary whitespace-nowrap px-6 py-3 shrink-0">Start Learning</div>
@@ -64,9 +67,7 @@ export default function DictionaryPage() {
             className="flex min-h-[5rem] flex-col items-center justify-center rounded-2xl border-2 border-line bg-surface p-4 text-center transition-all hover:-translate-y-1 hover:border-signal/40 hover:bg-aurora-soft hover:shadow-soft focus:outline-none focus:ring-2 focus:ring-signal"
           >
             <BookA className="mb-2 h-6 w-6 text-muted opacity-50" />
-            <span className="font-display font-semibold text-ink">
-              {displayLabel(word)}
-            </span>
+            <span className="font-display font-semibold text-ink">{displayLabel(word)}</span>
           </button>
         ))}
       </div>
@@ -75,7 +76,8 @@ export default function DictionaryPage() {
         <div className="mt-12 text-center text-muted">
           <p>No words found matching &quot;{query}&quot;</p>
           <p className="mt-2 text-sm text-muted">
-            Search for signs like &quot;hello&quot;, &quot;thank you&quot;, or &quot;help&quot; to see how they are performed in 3D.
+            Search for signs like &quot;hello&quot;, &quot;thank you&quot;, or &quot;help&quot; to
+            see how they are performed in 3D.
           </p>
         </div>
       )}
@@ -91,7 +93,7 @@ export default function DictionaryPage() {
             >
               <X className="h-5 w-5" />
             </button>
-            
+
             <h2 className="mb-4 text-center font-display text-3xl font-bold text-ink uppercase tracking-wide">
               {displayLabel(selectedWord)}
             </h2>

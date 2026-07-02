@@ -78,7 +78,13 @@ function RemoteVideo({ stream, captionsEnabled, caption, signEnabled, sign, t }:
   );
 }
 
-export default function CallRoomPage({ params, searchParams }: { params: { roomId: string }, searchParams: { ringing?: string, target?: string } }) {
+export default function CallRoomPage({
+  params,
+  searchParams,
+}: {
+  params: { roomId: string };
+  searchParams: { ringing?: string; target?: string };
+}) {
   const { settings } = useSettings();
   const t = useT();
   const call = useMeshCall(params.roomId);
@@ -90,7 +96,7 @@ export default function CallRoomPage({ params, searchParams }: { params: { roomI
   const endCallRef = useRef(call.endCall);
   endCallRef.current = call.endCall;
 
-  const currentCaption = Object.values(call.captions).find(c => !!c) || '';
+  const currentCaption = Object.values(call.captions).find((c) => !!c) || '';
   const [avatarText, setAvatarText] = useState('');
   const [isAvatarPlaying, setIsAvatarPlaying] = useState(false);
   const lastPlayedTokensRef = useRef('');
@@ -99,7 +105,7 @@ export default function CallRoomPage({ params, searchParams }: { params: { roomI
     if (currentCaption) {
       // Normalize to letters/numbers to match the avatar's tokenization logic
       const normalized = currentCaption.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      
+
       // Only trigger a new animation if the letters actually changed.
       // This prevents double-playback when 'hello ' (interim) becomes 'Hello.' (final)
       if (normalized && normalized !== lastPlayedTokensRef.current) {
@@ -132,32 +138,38 @@ export default function CallRoomPage({ params, searchParams }: { params: { roomI
       return;
     }
     if (!socket) return;
-    
+
     startedRef.current = true;
     void call.start();
-    
+
     return () => {
       startedRef.current = false;
     };
   }, [socket, call.start, isLoading, accessToken]);
 
   const statusRef = useRef(call.status);
-  
+
   useEffect(() => {
     // Transition edges
     if (statusRef.current === 'connecting' && call.status === 'connected') {
-      try { audioManager.playPickup(); } catch (e) {}
+      try {
+        audioManager.playPickup();
+      } catch (e) {}
     } else if (statusRef.current !== 'ended' && call.status === 'ended') {
-      try { audioManager.playEnd(); } catch (e) {}
+      try {
+        audioManager.playEnd();
+      } catch (e) {}
     }
-    
+
     // Outgoing ring loop when in connecting state and ringing requested
     if (call.status === 'connecting' && searchParams.ringing === 'true') {
-      try { audioManager.playOutgoingRing(); } catch (e) {}
+      try {
+        audioManager.playOutgoingRing();
+      } catch (e) {}
     } else if (call.status !== 'connecting') {
       audioManager.stopAll();
     }
-    
+
     statusRef.current = call.status;
   }, [call.status, searchParams.ringing]);
 
@@ -172,7 +184,7 @@ export default function CallRoomPage({ params, searchParams }: { params: { roomI
     if (!socket || !searchParams.target) return;
     const onRejected = () => setRejected(true);
     socket.on('call-rejected', onRejected);
-    
+
     return () => {
       socket.off('call-rejected', onRejected);
       // Cancel the call if we navigate away before it connects
@@ -218,7 +230,12 @@ export default function CallRoomPage({ params, searchParams }: { params: { roomI
   }
 
   const remotePeerIds = Object.keys(call.remoteStreams);
-  const gridCols = remotePeerIds.length > 4 ? 'grid-cols-3' : remotePeerIds.length > 1 ? 'grid-cols-2' : 'grid-cols-1';
+  const gridCols =
+    remotePeerIds.length > 4
+      ? 'grid-cols-3'
+      : remotePeerIds.length > 1
+        ? 'grid-cols-2'
+        : 'grid-cols-1';
 
   return (
     <div className="animate-fade-up flex flex-col h-[calc(100vh-8rem)]">
@@ -234,8 +251,8 @@ export default function CallRoomPage({ params, searchParams }: { params: { roomI
             className={`h-4 w-4 text-muted ${settings.reduceMotion ? '' : 'animate-spin'}`}
           />
         )}
-        {call.status === 'error' && call.error 
-          ? call.error 
+        {call.status === 'error' && call.error
+          ? call.error
           : call.status === 'connecting' && searchParams.ringing === 'true'
             ? 'Ringing...'
             : statusText(t, call.status)}
@@ -267,15 +284,14 @@ export default function CallRoomPage({ params, searchParams }: { params: { roomI
         {/* Text-to-Sign Avatar Translation (Picture-in-Picture) */}
         {call.captionsEnabled && isAvatarPlaying && (
           <div className="absolute right-4 top-4 z-10 h-32 w-48 overflow-hidden rounded-xl border border-canvas/40 shadow-lift sm:h-40 sm:w-56">
-            <TextToSignAvatar 
-              text={avatarText} 
-              onFinish={() => setIsAvatarPlaying(false)} 
-            />
+            <TextToSignAvatar text={avatarText} onFinish={() => setIsAvatarPlaying(false)} />
           </div>
         )}
 
         {/* Local video (picture-in-picture). */}
-        <div className={`absolute bottom-4 right-4 h-28 w-40 rounded-xl border border-canvas/40 object-cover shadow-lift sm:h-32 sm:w-48 overflow-hidden z-20 ${call.screenEnabled ? '' : '-scale-x-100'}`}>
+        <div
+          className={`absolute bottom-4 right-4 h-28 w-40 rounded-xl border border-canvas/40 object-cover shadow-lift sm:h-32 sm:w-48 overflow-hidden z-20 ${call.screenEnabled ? '' : '-scale-x-100'}`}
+        >
           <video
             ref={localVideoRef}
             autoPlay
@@ -348,16 +364,22 @@ export default function CallRoomPage({ params, searchParams }: { params: { roomI
           onClick={call.toggleScreenShare}
           pressed={call.screenEnabled}
           label={call.screenEnabled ? 'Stop sharing screen' : 'Share screen'}
-          icon={call.screenEnabled ? <MonitorOff className="h-5 w-5" /> : <MonitorUp className="h-5 w-5" />}
+          icon={
+            call.screenEnabled ? (
+              <MonitorOff className="h-5 w-5" />
+            ) : (
+              <MonitorUp className="h-5 w-5" />
+            )
+          }
           text={call.screenEnabled ? 'Stop sharing' : 'Share screen'}
         />
-        
+
         {/* Add Participant Modal component handling its own UI state */}
         {(call.status === 'connected' || call.status === 'connecting') && (
-          <AddParticipantModal 
-            roomId={params.roomId} 
-            currentPeers={remotePeerIds} 
-            initialTarget={searchParams.target} 
+          <AddParticipantModal
+            roomId={params.roomId}
+            currentPeers={remotePeerIds}
+            initialTarget={searchParams.target}
           />
         )}
 

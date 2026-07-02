@@ -3,7 +3,9 @@ import { API_URL } from './auth-api';
 
 type AuthFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 
-export async function fetchAdminAnalytics(authFetch: AuthFetch): Promise<AdminAnalyticsStats | null> {
+export async function fetchAdminAnalytics(
+  authFetch: AuthFetch,
+): Promise<AdminAnalyticsStats | null> {
   try {
     const res = await authFetch(`${API_URL}/api/admin/analytics`);
     const json = (await res.json()) as ApiResponse<AdminAnalyticsStats>;

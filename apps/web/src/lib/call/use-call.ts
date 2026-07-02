@@ -76,11 +76,9 @@ export function useCall(roomId: string) {
     (modality: MessageModality, content: string, sender: 'USER' | 'PARTNER' = 'USER') => {
       const id = conversationIdRef.current;
       if (!id) return;
-      void addMessage(authFetch, id, { sender, modality, language: lang, content }).catch(
-        () => {
-          /* best-effort transcript persistence */
-        },
-      );
+      void addMessage(authFetch, id, { sender, modality, language: lang, content }).catch(() => {
+        /* best-effort transcript persistence */
+      });
     },
     [authFetch, lang],
   );
@@ -159,10 +157,10 @@ export function useCall(roomId: string) {
             if (pred.label !== lastSignRef.current) {
               lastSignRef.current = pred.label;
               const text = displayLabel(pred.label);
-              
+
               signBufferRef.current.push(text);
               peerRef.current?.send({ kind: 'sign', text, final: false });
-              
+
               if (signDebounceRef.current) clearTimeout(signDebounceRef.current);
               signDebounceRef.current = setTimeout(() => {
                 void flushSignBuffer();
@@ -195,10 +193,12 @@ export function useCall(roomId: string) {
           if (msg.language !== lang) {
             if (msg.final) {
               setCaptions(`${msg.text} (Translating...)`);
-              void translate(authFetch, { text: msg.text, from: msg.language, to: lang }).then((res) => {
-                setCaptions(res.text);
-                persist('SPEECH', res.text, 'PARTNER');
-              });
+              void translate(authFetch, { text: msg.text, from: msg.language, to: lang }).then(
+                (res) => {
+                  setCaptions(res.text);
+                  persist('SPEECH', res.text, 'PARTNER');
+                },
+              );
             } else {
               setCaptions(msg.text);
             }
@@ -370,29 +370,35 @@ export function useCall(roomId: string) {
 
   const toggleScreenShare = useCallback(async () => {
     if (!localStreamRef.current || !peerRef.current) return;
-    
+
     if (screenEnabled) {
       // Revert to camera
       const cameraTrack = cameraTrackRef.current;
       if (cameraTrack) {
-         peerRef.current.replaceVideoTrack(cameraTrack);
-         const newStream = new MediaStream([cameraTrack, ...localStreamRef.current.getAudioTracks()]);
-         localStreamRef.current = newStream;
-         setLocalStream(newStream);
-         setScreenEnabled(false);
+        peerRef.current.replaceVideoTrack(cameraTrack);
+        const newStream = new MediaStream([
+          cameraTrack,
+          ...localStreamRef.current.getAudioTracks(),
+        ]);
+        localStreamRef.current = newStream;
+        setLocalStream(newStream);
+        setScreenEnabled(false);
       }
     } else {
       // Start screen share
       try {
         const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
         const screenTrack = screenStream.getVideoTracks()[0];
-        
+
         screenTrack.onended = () => {
           // User clicked "Stop sharing" via browser UI
           const cameraTrack = cameraTrackRef.current;
           if (cameraTrack && peerRef.current && localStreamRef.current) {
             peerRef.current.replaceVideoTrack(cameraTrack);
-            const newStream = new MediaStream([cameraTrack, ...localStreamRef.current.getAudioTracks()]);
+            const newStream = new MediaStream([
+              cameraTrack,
+              ...localStreamRef.current.getAudioTracks(),
+            ]);
             localStreamRef.current = newStream;
             setLocalStream(newStream);
             setScreenEnabled(false);
@@ -400,7 +406,10 @@ export function useCall(roomId: string) {
         };
 
         peerRef.current.replaceVideoTrack(screenTrack);
-        const newStream = new MediaStream([screenTrack, ...localStreamRef.current.getAudioTracks()]);
+        const newStream = new MediaStream([
+          screenTrack,
+          ...localStreamRef.current.getAudioTracks(),
+        ]);
         localStreamRef.current = newStream;
         setLocalStream(newStream);
         setScreenEnabled(true);
@@ -414,7 +423,7 @@ export function useCall(roomId: string) {
     if (signBufferRef.current.length === 0) return;
     const words = [...signBufferRef.current];
     signBufferRef.current = [];
-    
+
     const sentence = await reconstructGrammar(authFetch, words, lang);
     peerRef.current?.send({ kind: 'sign', text: sentence, final: true });
     persist('SIGN', sentence);

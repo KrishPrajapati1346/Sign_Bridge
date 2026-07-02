@@ -21,7 +21,7 @@ grammarRouter.post(
   '/',
   asyncHandler(async (req: Request, res: Response<ApiResponse<{ sentence: string }>>) => {
     const { words, language } = req.body;
-    
+
     if (!words || !Array.isArray(words) || words.length === 0) {
       res.json({ success: true, data: { sentence: '' } });
       return;
@@ -29,8 +29,8 @@ grammarRouter.post(
 
     try {
       if (!ai) {
-         res.json({ success: true, data: { sentence: words.join(' ') } });
-         return;
+        res.json({ success: true, data: { sentence: words.join(' ') } });
+        return;
       }
 
       const prompt = `You are a Sign Language grammar reconstructor. You receive a list of disjointed signed words in ${language || 'English'} and your job is to output a single, grammatically correct, natural sounding sentence.

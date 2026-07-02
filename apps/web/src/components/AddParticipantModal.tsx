@@ -13,11 +13,19 @@ interface UserProfile {
   email: string;
 }
 
-export function AddParticipantModal({ roomId, currentPeers, initialTarget }: { roomId: string, currentPeers: string[], initialTarget?: string }) {
+export function AddParticipantModal({
+  roomId,
+  currentPeers,
+  initialTarget,
+}: {
+  roomId: string;
+  currentPeers: string[];
+  initialTarget?: string;
+}) {
   const { authFetch, user } = useAuth();
   const { socket } = useSocket();
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [query, setQuery] = useState('');
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
@@ -43,13 +51,19 @@ export function AddParticipantModal({ roomId, currentPeers, initialTarget }: { r
 
   useEffect(() => {
     if (!socket || !isOpen) return;
-    
+
     const handleOnlineUsers = (userIds: string[]) => {
       setOnlineUsers(new Set(userIds));
     };
 
-    const handleStatusChanged = ({ userId, status }: { userId: string, status: 'online' | 'offline' }) => {
-      setOnlineUsers(prev => {
+    const handleStatusChanged = ({
+      userId,
+      status,
+    }: {
+      userId: string;
+      status: 'online' | 'offline';
+    }) => {
+      setOnlineUsers((prev) => {
         const next = new Set(prev);
         if (status === 'online') next.add(userId);
         else next.delete(userId);
@@ -59,7 +73,7 @@ export function AddParticipantModal({ roomId, currentPeers, initialTarget }: { r
 
     socket.on('online-users', handleOnlineUsers);
     socket.on('user-status-changed', handleStatusChanged);
-    
+
     // Request initial list
     socket.emit('get-online-users');
 
@@ -71,7 +85,7 @@ export function AddParticipantModal({ roomId, currentPeers, initialTarget }: { r
 
   // If a ringing user joins, stop ringing them
   useEffect(() => {
-    setRingingUsers(prev => {
+    setRingingUsers((prev) => {
       let changed = false;
       const next = new Set(prev);
       for (const peerId of currentPeers) {
@@ -81,8 +95,8 @@ export function AddParticipantModal({ roomId, currentPeers, initialTarget }: { r
         }
       }
       if (changed && next.size === 0) {
-         // Stop outgoing ring if no one is ringing anymore
-         audioManager.stopAll();
+        // Stop outgoing ring if no one is ringing anymore
+        audioManager.stopAll();
       }
       return changed ? next : prev;
     });
@@ -90,24 +104,28 @@ export function AddParticipantModal({ roomId, currentPeers, initialTarget }: { r
 
   const handleRing = (targetUserId: string) => {
     if (!socket || !user) return;
-    
+
     socket.emit('call-invite', {
       toId: targetUserId,
       roomId,
       callerName: user.name || user.email,
     });
 
-    setRingingUsers(prev => new Set(prev).add(targetUserId));
-    
+    setRingingUsers((prev) => new Set(prev).add(targetUserId));
+
     // Play outgoing ring (since we are ringing a new user)
-    try { audioManager.playOutgoingRing(); } catch (e) {}
+    try {
+      audioManager.playOutgoingRing();
+    } catch (e) {}
   };
 
-  const availableUsers = users.filter(u => 
-    u.id !== user?.id && // don't show yourself
-    u.id !== initialTarget && // don't show the initial target
-    !currentPeers.includes(u.id) && 
-    (u.name?.toLowerCase().includes(query.toLowerCase()) || u.email.toLowerCase().includes(query.toLowerCase()))
+  const availableUsers = users.filter(
+    (u) =>
+      u.id !== user?.id && // don't show yourself
+      u.id !== initialTarget && // don't show the initial target
+      !currentPeers.includes(u.id) &&
+      (u.name?.toLowerCase().includes(query.toLowerCase()) ||
+        u.email.toLowerCase().includes(query.toLowerCase())),
   );
 
   return (
@@ -130,7 +148,7 @@ export function AddParticipantModal({ roomId, currentPeers, initialTarget }: { r
                 <X className="h-6 w-6" />
               </button>
             </div>
-            
+
             <div className="mb-4 relative">
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                 <Search className="h-5 w-5 text-muted" />
@@ -143,37 +161,46 @@ export function AddParticipantModal({ roomId, currentPeers, initialTarget }: { r
                 className="block w-full rounded-xl border-line bg-canvas py-2.5 pl-10 pr-4 focus:border-signal sm:text-sm"
               />
             </div>
-            
+
             <ul className="flex-1 overflow-y-auto space-y-2 pr-2">
-              {availableUsers.map(u => {
+              {availableUsers.map((u) => {
                 const isOnline = onlineUsers.has(u.id);
                 const isRinging = ringingUsers.has(u.id);
-                
+
                 return (
-                  <li key={u.id} className="flex items-center justify-between p-3 rounded-2xl bg-canvas border border-line hover:border-signal/30 transition">
+                  <li
+                    key={u.id}
+                    className="flex items-center justify-between p-3 rounded-2xl bg-canvas border border-line hover:border-signal/30 transition"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface text-muted">
                         <UserCircle2 className="h-6 w-6" />
-                        <div className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-canvas ${isOnline ? 'bg-bridge' : 'bg-muted'}`} />
+                        <div
+                          className={`absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-canvas ${isOnline ? 'bg-bridge' : 'bg-muted'}`}
+                        />
                       </div>
                       <div>
                         <p className="font-medium text-sm text-ink">{u.name || 'Anonymous User'}</p>
-                        <p className="text-xs text-muted truncate max-w-[150px] sm:max-w-[200px]">{u.email}</p>
+                        <p className="text-xs text-muted truncate max-w-[150px] sm:max-w-[200px]">
+                          {u.email}
+                        </p>
                       </div>
                     </div>
-                    
+
                     <button
                       onClick={() => handleRing(u.id)}
                       disabled={!isOnline || isRinging}
                       className={`flex min-h-9 items-center justify-center gap-2 rounded-xl px-4 py-1.5 text-sm font-semibold transition-colors ${
-                        isRinging 
+                        isRinging
                           ? 'bg-bridge/20 text-bridge'
-                          : isOnline 
-                            ? 'bg-bridge text-white hover:bg-bridge/90' 
+                          : isOnline
+                            ? 'bg-bridge text-white hover:bg-bridge/90'
                             : 'bg-surface text-muted cursor-not-allowed border border-line'
                       }`}
                     >
-                      {isRinging ? 'Ringing...' : (
+                      {isRinging ? (
+                        'Ringing...'
+                      ) : (
                         <>
                           <Phone className="h-4 w-4" />
                           Ring
@@ -184,7 +211,9 @@ export function AddParticipantModal({ roomId, currentPeers, initialTarget }: { r
                 );
               })}
               {availableUsers.length === 0 && (
-                <p className="text-center text-muted mt-6 text-sm">No other users found to invite.</p>
+                <p className="text-center text-muted mt-6 text-sm">
+                  No other users found to invite.
+                </p>
               )}
             </ul>
           </div>

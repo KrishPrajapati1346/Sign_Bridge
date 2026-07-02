@@ -31,7 +31,7 @@ class AudioManager {
 
     osc.type = type;
     osc.frequency.setValueAtTime(freq, ctx.currentTime);
-    
+
     // Envelope to avoid popping
     gain.gain.setValueAtTime(0, ctx.currentTime);
     gain.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.05);
@@ -50,7 +50,7 @@ class AudioManager {
     // Fast double beep looping
     this.playTone(600, 'sine', 0.2, 0.15);
     setTimeout(() => this.playTone(600, 'sine', 0.2, 0.15), 250);
-    
+
     this.currentInterval = setInterval(() => {
       this.playTone(600, 'sine', 0.2, 0.15);
       setTimeout(() => this.playTone(600, 'sine', 0.2, 0.15), 250);
@@ -69,7 +69,7 @@ class AudioManager {
   public playPickup() {
     this.stopAll();
     // Quick ascending arpeggio (C major: C4, E4, G4)
-    const freqs = [261.63, 329.63, 392.00];
+    const freqs = [261.63, 329.63, 392.0];
     freqs.forEach((freq, i) => {
       setTimeout(() => {
         this.playTone(freq, 'sine', 0.15, 0.1);
@@ -80,7 +80,7 @@ class AudioManager {
   public playEnd() {
     this.stopAll();
     // Quick descending arpeggio (C minor: G4, Eb4, C4)
-    const freqs = [392.00, 311.13, 261.63];
+    const freqs = [392.0, 311.13, 261.63];
     freqs.forEach((freq, i) => {
       setTimeout(() => {
         this.playTone(freq, 'sine', 0.15, 0.1);

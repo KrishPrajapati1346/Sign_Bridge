@@ -10,7 +10,9 @@ adminRouter.use(requireAuth);
 
 const requireAdmin = (req: Request, res: Response, next: NextFunction) => {
   if (req.user?.role !== 'ADMIN') {
-    res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'Admin access required' } });
+    res
+      .status(403)
+      .json({ success: false, error: { code: 'FORBIDDEN', message: 'Admin access required' } });
     return;
   }
   next();
@@ -33,13 +35,48 @@ adminRouter.get(
 
     // Mock weekly usage data for the chart, as we don't have historical message timestamps in this phase.
     const usageData = [
-      { name: 'Mon', signs: Math.floor(totalSignsTranslated * 0.1), calls: 12, users: Math.floor(newUsers * 0.1) },
-      { name: 'Tue', signs: Math.floor(totalSignsTranslated * 0.15), calls: 15, users: Math.floor(newUsers * 0.15) },
-      { name: 'Wed', signs: Math.floor(totalSignsTranslated * 0.2), calls: 18, users: Math.floor(newUsers * 0.2) },
-      { name: 'Thu', signs: Math.floor(totalSignsTranslated * 0.18), calls: 14, users: Math.floor(newUsers * 0.18) },
-      { name: 'Fri', signs: Math.floor(totalSignsTranslated * 0.12), calls: 16, users: Math.floor(newUsers * 0.12) },
-      { name: 'Sat', signs: Math.floor(totalSignsTranslated * 0.15), calls: 20, users: Math.floor(newUsers * 0.15) },
-      { name: 'Sun', signs: Math.floor(totalSignsTranslated * 0.1), calls: 10, users: Math.floor(newUsers * 0.1) },
+      {
+        name: 'Mon',
+        signs: Math.floor(totalSignsTranslated * 0.1),
+        calls: 12,
+        users: Math.floor(newUsers * 0.1),
+      },
+      {
+        name: 'Tue',
+        signs: Math.floor(totalSignsTranslated * 0.15),
+        calls: 15,
+        users: Math.floor(newUsers * 0.15),
+      },
+      {
+        name: 'Wed',
+        signs: Math.floor(totalSignsTranslated * 0.2),
+        calls: 18,
+        users: Math.floor(newUsers * 0.2),
+      },
+      {
+        name: 'Thu',
+        signs: Math.floor(totalSignsTranslated * 0.18),
+        calls: 14,
+        users: Math.floor(newUsers * 0.18),
+      },
+      {
+        name: 'Fri',
+        signs: Math.floor(totalSignsTranslated * 0.12),
+        calls: 16,
+        users: Math.floor(newUsers * 0.12),
+      },
+      {
+        name: 'Sat',
+        signs: Math.floor(totalSignsTranslated * 0.15),
+        calls: 20,
+        users: Math.floor(newUsers * 0.15),
+      },
+      {
+        name: 'Sun',
+        signs: Math.floor(totalSignsTranslated * 0.1),
+        calls: 10,
+        users: Math.floor(newUsers * 0.1),
+      },
     ];
 
     res.json({
@@ -59,18 +96,25 @@ adminRouter.get(
   asyncHandler(async (_req: Request, res: Response<ApiResponse<AdminSignSample[]>>) => {
     const signs = await prisma.signSample.findMany({
       include: {
-        user: { select: { name: true, email: true } }
+        user: { select: { name: true, email: true } },
       },
       orderBy: { createdAt: 'desc' },
       take: 50,
     });
 
-    const formatted = signs.map((s: { id: string; label: string; createdAt: Date; user: { name: string | null; email: string } }) => ({
-      id: s.id,
-      label: s.label,
-      createdAt: s.createdAt.toISOString(),
-      user: s.user,
-    }));
+    const formatted = signs.map(
+      (s: {
+        id: string;
+        label: string;
+        createdAt: Date;
+        user: { name: string | null; email: string };
+      }) => ({
+        id: s.id,
+        label: s.label,
+        createdAt: s.createdAt.toISOString(),
+        user: s.user,
+      }),
+    );
 
     res.json({ success: true, data: formatted });
   }),
@@ -81,6 +125,9 @@ adminRouter.post(
   asyncHandler(async (_req: Request, res: Response<ApiResponse<{ message: string }>>) => {
     // Simulate ML retraining pipeline delay
     await new Promise((resolve) => setTimeout(resolve, 2000));
-    res.json({ success: true, data: { message: 'Machine learning models successfully retrained and deployed.' } });
+    res.json({
+      success: true,
+      data: { message: 'Machine learning models successfully retrained and deployed.' },
+    });
   }),
 );

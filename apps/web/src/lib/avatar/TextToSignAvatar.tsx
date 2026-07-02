@@ -31,7 +31,7 @@ function tokenize(text: string): string[] {
 export function TextToSignAvatar({ text, onFinish, loop = false }: TextToSignAvatarProps) {
   const [library, setLibrary] = useState<PoseLibrary | null | undefined>(undefined);
   const [currentPose, setCurrentPose] = useState<SignPose | null>(null);
-  
+
   const poseIndexRef = useRef(0);
   const wordsRef = useRef<string[]>([]);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -52,14 +52,14 @@ export function TextToSignAvatar({ text, onFinish, loop = false }: TextToSignAva
   }, []);
 
   // Whenever text updates, tokenize it and only animate NEW words.
-  // We assume that if the text shrinks or changes dramatically (not a prefix), 
+  // We assume that if the text shrinks or changes dramatically (not a prefix),
   // it's a new utterance, so we reset the index.
   useEffect(() => {
     if (!library) return;
 
     const newWords = tokenize(text);
     const oldWords = wordsRef.current;
-    
+
     // If the text became empty, do nothing so the current animation can finish naturally.
     if (newWords.length === 0 && oldWords.length > 0) {
       return;
@@ -97,15 +97,15 @@ export function TextToSignAvatar({ text, onFinish, loop = false }: TextToSignAva
         setCurrentPose(null);
         timeoutRef.current = null;
         if (wordsRef.current.length > 0) {
-           onFinishRef.current?.();
-           wordsRef.current = []; // Clear so we don't trigger finish again
+          onFinishRef.current?.();
+          wordsRef.current = []; // Clear so we don't trigger finish again
         }
         return;
       }
 
       const word = wordsRef.current[poseIndexRef.current];
       const pose = getPose(library, word);
-      
+
       setCurrentPose(pose); // Will be null if word is unknown, but we still wait.
       poseIndexRef.current++;
 

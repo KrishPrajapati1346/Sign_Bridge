@@ -48,7 +48,9 @@ function PracticeInner() {
 
   const [library, setLibrary] = useState<any>(null);
   useEffect(() => {
-    loadPoseLibrary().then(setLibrary).catch(() => {});
+    loadPoseLibrary()
+      .then(setLibrary)
+      .catch(() => {});
   }, []);
 
   const target = labels[index];
@@ -92,13 +94,29 @@ function PracticeInner() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     const HAND_CONNECTIONS = [
-      [0, 1], [1, 2], [2, 3], [3, 4],
-      [0, 5], [5, 6], [6, 7], [7, 8],
-      [5, 9], [9, 10], [10, 11], [11, 12],
-      [9, 13], [13, 14], [14, 15], [15, 16],
-      [13, 17], [0, 17], [17, 18], [18, 19], [19, 20]
+      [0, 1],
+      [1, 2],
+      [2, 3],
+      [3, 4],
+      [0, 5],
+      [5, 6],
+      [6, 7],
+      [7, 8],
+      [5, 9],
+      [9, 10],
+      [10, 11],
+      [11, 12],
+      [9, 13],
+      [13, 14],
+      [14, 15],
+      [15, 16],
+      [13, 17],
+      [0, 17],
+      [17, 18],
+      [18, 19],
+      [19, 20],
     ] as const;
 
     // Draw target stencil (semi-transparent white)
@@ -106,18 +124,18 @@ function PracticeInner() {
       for (const hand of targetPoseRef.current.hands) {
         ctx.lineWidth = 8;
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-        
+
         for (const [start, end] of HAND_CONNECTIONS) {
           const p1 = hand.landmarks[start];
           const p2 = hand.landmarks[end];
           if (!p1 || !p2) continue;
-          
+
           ctx.beginPath();
           ctx.moveTo(p1[0] * canvas.width, p1[1] * canvas.height);
           ctx.lineTo(p2[0] * canvas.width, p2[1] * canvas.height);
           ctx.stroke();
         }
-        
+
         ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
         for (const lm of hand.landmarks) {
           ctx.beginPath();
@@ -131,12 +149,12 @@ function PracticeInner() {
       // Draw connections
       ctx.lineWidth = 3;
       ctx.strokeStyle = 'rgba(47, 109, 246, 0.8)'; // blue
-      
+
       for (const [start, end] of HAND_CONNECTIONS) {
         const p1 = hand.landmarks[start];
         const p2 = hand.landmarks[end];
         if (!p1 || !p2) continue;
-        
+
         ctx.beginPath();
         ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
         ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);

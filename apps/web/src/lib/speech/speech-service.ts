@@ -165,7 +165,7 @@ export async function speak(
   const targetLang = bcp47.toLowerCase();
   const shortLang = options.lang.toLowerCase();
   const byLang =
-    voices.find((v) => v.lang.toLowerCase() === targetLang) ?? 
+    voices.find((v) => v.lang.toLowerCase() === targetLang) ??
     voices.find((v) => v.lang.toLowerCase().startsWith(shortLang));
   const voice = requested ?? byLang;
 
@@ -175,17 +175,17 @@ export async function speak(
       const audioUrl = `/api/tts?text=${encodeURIComponent(text)}&lang=${options.lang}`;
       const audio = new Audio(audioUrl);
       currentCloudAudio = audio;
-      
+
       if (options.onStart) {
         audio.addEventListener('play', options.onStart);
       }
-      
+
       audio.addEventListener('ended', () => {
         if (currentCloudAudio === audio) currentCloudAudio = null;
         options.onEnd?.();
         resolve({ matchedLanguage: true }); // True because cloud guarantees the correct language
       });
-      
+
       audio.addEventListener('error', () => {
         if (currentCloudAudio === audio) currentCloudAudio = null;
         options.onError?.();

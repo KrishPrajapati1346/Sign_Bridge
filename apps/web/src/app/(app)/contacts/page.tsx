@@ -18,7 +18,7 @@ export default function ContactsPage() {
   const { authFetch, user } = useAuth();
   const { socket } = useSocket();
   const router = useRouter();
-  
+
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [query, setQuery] = useState('');
 
@@ -48,13 +48,19 @@ export default function ContactsPage() {
 
   useEffect(() => {
     if (!socket) return;
-    
+
     const handleOnlineUsers = (userIds: string[]) => {
       setOnlineUsers(new Set(userIds));
     };
 
-    const handleStatusChanged = ({ userId, status }: { userId: string, status: 'online' | 'offline' }) => {
-      setOnlineUsers(prev => {
+    const handleStatusChanged = ({
+      userId,
+      status,
+    }: {
+      userId: string;
+      status: 'online' | 'offline';
+    }) => {
+      setOnlineUsers((prev) => {
         const next = new Set(prev);
         if (status === 'online') next.add(userId);
         else next.delete(userId);
@@ -64,7 +70,7 @@ export default function ContactsPage() {
 
     socket.on('online-users', handleOnlineUsers);
     socket.on('user-status-changed', handleStatusChanged);
-    
+
     // Request initial list
     socket.emit('get-online-users');
 
@@ -76,10 +82,10 @@ export default function ContactsPage() {
 
   const handleCall = (targetUserId: string) => {
     if (!socket || !user) return;
-    
+
     // Generate a random room ID
     const roomId = Math.random().toString(36).substring(2, 9);
-    
+
     // Emit call invite via global socket
     socket.emit('call-invite', {
       toId: targetUserId,
@@ -116,7 +122,9 @@ export default function ContactsPage() {
               <div className="flex items-center gap-3 overflow-hidden">
                 <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-canvas text-muted">
                   <UserCircle2 className="h-7 w-7" />
-                  <div className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-surface ${isOnline ? 'bg-bridge' : 'bg-muted'}`} />
+                  <div
+                    className={`absolute bottom-0 right-0 h-3.5 w-3.5 rounded-full border-2 border-surface ${isOnline ? 'bg-bridge' : 'bg-muted'}`}
+                  />
                 </div>
                 <div className="overflow-hidden">
                   <p className="truncate font-display font-semibold text-ink">
@@ -129,8 +137,8 @@ export default function ContactsPage() {
                 onClick={() => handleCall(u.id)}
                 disabled={!isOnline}
                 className={`ml-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors ${
-                  isOnline 
-                    ? 'bg-bridge/10 text-bridge hover:bg-bridge hover:text-surface' 
+                  isOnline
+                    ? 'bg-bridge/10 text-bridge hover:bg-bridge hover:text-surface'
                     : 'bg-canvas text-muted opacity-50 cursor-not-allowed'
                 }`}
                 aria-label={`Call ${u.name}`}
@@ -141,9 +149,7 @@ export default function ContactsPage() {
           );
         })}
       </ul>
-      {filtered.length === 0 && (
-        <p className="text-center text-muted mt-10">No users found.</p>
-      )}
+      {filtered.length === 0 && <p className="text-center text-muted mt-10">No users found.</p>}
     </div>
   );
 }

@@ -14,14 +14,16 @@ import { useSettings } from '@/lib/settings-context';
 export default function DocumentUploadPage() {
   const { authFetch } = useAuth();
   const { settings } = useSettings();
-  
+
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string | null>(null);
-  
-  const [status, setStatus] = useState<'idle' | 'analyzing' | 'correcting' | 'complete' | 'error'>('idle');
+
+  const [status, setStatus] = useState<'idle' | 'analyzing' | 'correcting' | 'complete' | 'error'>(
+    'idle',
+  );
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  
+
   const [rawTranscript, setRawTranscript] = useState<string[]>([]);
   const [finalDocument, setFinalDocument] = useState<string | null>(null);
 
@@ -57,15 +59,15 @@ export default function DocumentUploadPage() {
 
   const processVideo = async () => {
     if (!videoRef.current || !landmarkerRef.current) return;
-    
+
     setStatus('analyzing');
     setProgress(0);
     setRawTranscript([]);
     lastSignRef.current = null;
-    
+
     const video = videoRef.current;
     video.currentTime = 0;
-    
+
     // Play video to process frame by frame
     try {
       await video.play();
@@ -84,7 +86,7 @@ export default function DocumentUploadPage() {
       const nowInMs = performance.now();
       const hands = detect(landmarkerRef.current, video, nowInMs);
       const { features, handCount } = extractFeatures(hands);
-      
+
       setProgress(Math.round((video.currentTime / video.duration) * 100) || 0);
 
       if (handCount > 0) {
@@ -107,12 +109,12 @@ export default function DocumentUploadPage() {
 
   const handleVideoEnd = useCallback(async () => {
     setStatus('correcting');
-    
+
     try {
       if (rawTranscript.length === 0) {
-        throw new Error("No signs detected in the video.");
+        throw new Error('No signs detected in the video.');
       }
-      
+
       const rawText = rawTranscript.join(' ');
       const corrected = await reconstructGrammar(authFetch, rawTranscript, 'en');
       setFinalDocument(corrected);
@@ -125,28 +127,28 @@ export default function DocumentUploadPage() {
 
   const generatePDF = () => {
     if (!finalDocument) return;
-    
+
     const doc = new jsPDF();
     doc.setFont('helvetica');
-    
+
     // Header
     doc.setFontSize(22);
     doc.setTextColor(47, 109, 246); // Signal blue
     doc.text('SignBridge Document Translation', 20, 30);
-    
+
     // Meta
     doc.setFontSize(10);
     doc.setTextColor(150, 150, 150);
     doc.text(`Generated on: ${new Date().toLocaleString()}`, 20, 40);
     doc.line(20, 45, 190, 45);
-    
+
     // Body
     doc.setFontSize(12);
     doc.setTextColor(40, 40, 40);
-    
+
     const lines = doc.splitTextToSize(finalDocument, 170);
     doc.text(lines, 20, 60);
-    
+
     doc.save(`SignBridge_Translation_${new Date().getTime()}.pdf`);
   };
 
@@ -164,20 +166,25 @@ export default function DocumentUploadPage() {
             <div className="p-6">
               <h3 className="font-display text-lg font-semibold text-ink">1. Upload Video</h3>
               <p className="mt-1 text-sm text-muted">Select an MP4 or WebM video file.</p>
-              
+
               <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-line bg-canvas p-8 hover:bg-line/50 transition">
                 <Upload className="mb-3 h-8 w-8 text-muted" />
                 <span className="font-medium text-ink">Click to upload video</span>
                 <span className="mt-1 text-xs text-muted">MP4, WebM (Max 50MB)</span>
-                <input type="file" accept="video/mp4,video/webm" className="hidden" onChange={handleFileChange} />
+                <input
+                  type="file"
+                  accept="video/mp4,video/webm"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
               </label>
 
               {videoUrl && (
                 <div className="mt-4 rounded-xl overflow-hidden bg-black aspect-video relative">
-                  <video 
-                    ref={videoRef} 
-                    src={videoUrl} 
-                    controls={status === 'idle' || status === 'complete'} 
+                  <video
+                    ref={videoRef}
+                    src={videoUrl}
+                    controls={status === 'idle' || status === 'complete'}
                     className="w-full h-full object-contain"
                     onEnded={handleVideoEnd}
                   />
@@ -222,7 +229,10 @@ export default function DocumentUploadPage() {
               <div className="flex-1 flex flex-col items-center justify-center text-ink border border-line rounded-xl bg-canvas p-8">
                 <RefreshCcw className="mb-4 h-8 w-8 animate-spin text-signal" />
                 <p className="font-medium">Applying AI Grammar Correction...</p>
-                <p className="mt-2 text-xs text-muted text-center max-w-xs">Converting literal sign translation into natural spoken English using Google Gemini.</p>
+                <p className="mt-2 text-xs text-muted text-center max-w-xs">
+                  Converting literal sign translation into natural spoken English using Google
+                  Gemini.
+                </p>
               </div>
             )}
 
@@ -236,12 +246,13 @@ export default function DocumentUploadPage() {
             {status === 'complete' && finalDocument && (
               <div className="flex-1 flex flex-col">
                 <div className="flex-1 rounded-xl border border-line bg-surface p-6 shadow-sm mb-4">
-                  <div className="prose prose-sm text-ink max-w-none">
-                    {finalDocument}
-                  </div>
+                  <div className="prose prose-sm text-ink max-w-none">{finalDocument}</div>
                 </div>
-                
-                <button onClick={generatePDF} className="btn-primary min-h-12 w-full flex items-center justify-center gap-2">
+
+                <button
+                  onClick={generatePDF}
+                  className="btn-primary min-h-12 w-full flex items-center justify-center gap-2"
+                >
                   <Download className="h-5 w-5" />
                   Download PDF
                 </button>

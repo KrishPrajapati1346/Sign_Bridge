@@ -21,7 +21,8 @@ export function TourProvider() {
     },
     {
       target: '#modules-heading',
-      content: 'Access all SignBridge modules here, including Avatar translation and ML Model training.',
+      content:
+        'Access all SignBridge modules here, including Avatar translation and ML Model training.',
       placement: 'top',
     },
   ];
@@ -46,12 +47,5 @@ export function TourProvider() {
     }
   };
 
-  return (
-    <Joyride
-      steps={steps}
-      run={run}
-      continuous
-      callback={handleJoyrideCallback}
-    />
-  );
+  return <Joyride steps={steps} run={run} continuous callback={handleJoyrideCallback} />;
 }

@@ -84,44 +84,108 @@ export default function AdminAnalyticsPage() {
 
       <div className="mt-8 grid gap-6 lg:grid-cols-2">
         <div className="card p-6">
-          <h3 className="mb-6 font-display text-lg font-semibold text-ink">Sign Translation Volume</h3>
+          <h3 className="mb-6 font-display text-lg font-semibold text-ink">
+            Sign Translation Volume
+          </h3>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data.usageData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <AreaChart
+                data={data.usageData}
+                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+              >
                 <defs>
                   <linearGradient id="colorSigns" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#2f6df6" stopOpacity={0.3} />
                     <stop offset="95%" stopColor="#2f6df6" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgb(var(--color-line))" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'rgb(var(--color-muted))', fontSize: 12 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: 'rgb(var(--color-muted))', fontSize: 12 }} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: 'rgb(var(--color-surface))', borderColor: 'rgb(var(--color-line))', borderRadius: '8px', color: 'rgb(var(--color-ink))' }}
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="rgb(var(--color-line))"
+                />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'rgb(var(--color-muted))', fontSize: 12 }}
+                  dy={10}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'rgb(var(--color-muted))', fontSize: 12 }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: 'rgb(var(--color-surface))',
+                    borderColor: 'rgb(var(--color-line))',
+                    borderRadius: '8px',
+                    color: 'rgb(var(--color-ink))',
+                  }}
                   itemStyle={{ color: 'rgb(var(--color-ink))' }}
                 />
-                <Area type="monotone" dataKey="signs" stroke="#2f6df6" strokeWidth={3} fillOpacity={1} fill="url(#colorSigns)" />
+                <Area
+                  type="monotone"
+                  dataKey="signs"
+                  stroke="#2f6df6"
+                  strokeWidth={3}
+                  fillOpacity={1}
+                  fill="url(#colorSigns)"
+                />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         <div className="card p-6">
-          <h3 className="mb-6 font-display text-lg font-semibold text-ink">Daily Active Users & Calls</h3>
+          <h3 className="mb-6 font-display text-lg font-semibold text-ink">
+            Daily Active Users & Calls
+          </h3>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.usageData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgb(var(--color-line))" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'rgb(var(--color-muted))', fontSize: 12 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: 'rgb(var(--color-muted))', fontSize: 12 }} />
-                <Tooltip 
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  vertical={false}
+                  stroke="rgb(var(--color-line))"
+                />
+                <XAxis
+                  dataKey="name"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'rgb(var(--color-muted))', fontSize: 12 }}
+                  dy={10}
+                />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fill: 'rgb(var(--color-muted))', fontSize: 12 }}
+                />
+                <Tooltip
                   cursor={{ fill: 'rgb(var(--color-canvas))' }}
-                  contentStyle={{ backgroundColor: 'rgb(var(--color-surface))', borderColor: 'rgb(var(--color-line))', borderRadius: '8px', color: 'rgb(var(--color-ink))' }}
+                  contentStyle={{
+                    backgroundColor: 'rgb(var(--color-surface))',
+                    borderColor: 'rgb(var(--color-line))',
+                    borderRadius: '8px',
+                    color: 'rgb(var(--color-ink))',
+                  }}
                 />
                 <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
-                <Bar dataKey="users" name="Active Users" fill="#0f9d8a" radius={[4, 4, 0, 0]} barSize={20} />
-                <Bar dataKey="calls" name="Video Calls" fill="#ff5a3c" radius={[4, 4, 0, 0]} barSize={20} />
+                <Bar
+                  dataKey="users"
+                  name="Active Users"
+                  fill="#0f9d8a"
+                  radius={[4, 4, 0, 0]}
+                  barSize={20}
+                />
+                <Bar
+                  dataKey="calls"
+                  name="Video Calls"
+                  fill="#ff5a3c"
+                  radius={[4, 4, 0, 0]}
+                  barSize={20}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>

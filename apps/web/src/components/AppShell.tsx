@@ -114,31 +114,33 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
 
   return (
     <>
-      {NAV_ITEMS.filter(item => !item.adminOnly || isAdmin).map(({ href, label, labelKey, icon: Icon, emphasis }) => {
-        const active = pathname === href || pathname.startsWith(`${href}/`);
-        const emergency = emphasis === 'emergency';
-        const className = emergency
-          ? `flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition ${
-              active ? 'bg-beacon text-white shadow-soft' : 'text-beacon hover:bg-beacon/10'
-            }`
-          : `flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${
-              active
-                ? 'bg-aurora-soft text-signalInk ring-1 ring-inset ring-signal/20'
-                : 'text-ink hover:bg-canvas'
-            }`;
-        return (
-          <Link
-            key={href}
-            href={href}
-            onClick={onNavigate}
-            aria-current={active ? 'page' : undefined}
-            className={className}
-          >
-            <Icon aria-hidden="true" className="h-5 w-5 shrink-0" />
-            {t(labelKey) || label}
-          </Link>
-        );
-      })}
+      {NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin).map(
+        ({ href, label, labelKey, icon: Icon, emphasis }) => {
+          const active = pathname === href || pathname.startsWith(`${href}/`);
+          const emergency = emphasis === 'emergency';
+          const className = emergency
+            ? `flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                active ? 'bg-beacon text-white shadow-soft' : 'text-beacon hover:bg-beacon/10'
+              }`
+            : `flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${
+                active
+                  ? 'bg-aurora-soft text-signalInk ring-1 ring-inset ring-signal/20'
+                  : 'text-ink hover:bg-canvas'
+              }`;
+          return (
+            <Link
+              key={href}
+              href={href}
+              onClick={onNavigate}
+              aria-current={active ? 'page' : undefined}
+              className={className}
+            >
+              <Icon aria-hidden="true" className="h-5 w-5 shrink-0" />
+              {t(labelKey) || label}
+            </Link>
+          );
+        },
+      )}
     </>
   );
 }

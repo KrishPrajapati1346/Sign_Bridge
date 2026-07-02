@@ -9,15 +9,21 @@ import { audioManager } from '@/lib/call/audio-manager';
 export function CallRinger() {
   const { socket } = useSocket();
   const router = useRouter();
-  
-  const [incoming, setIncoming] = useState<{ fromId: string; roomId: string; callerName: string } | null>(null);
+
+  const [incoming, setIncoming] = useState<{
+    fromId: string;
+    roomId: string;
+    callerName: string;
+  } | null>(null);
 
   useEffect(() => {
     if (!socket) return;
 
     const onIncoming = (payload: { fromId: string; roomId: string; callerName: string }) => {
       setIncoming(payload);
-      try { audioManager.playIncomingRing(); } catch (e) {}
+      try {
+        audioManager.playIncomingRing();
+      } catch (e) {}
     };
 
     const onCancelled = () => {
@@ -61,10 +67,8 @@ export function CallRinger() {
               <Phone className="h-3 w-3" />
             </span>
           </div>
-          
-          <h2 className="font-display text-2xl font-bold text-ink mb-1">
-            {incoming.callerName}
-          </h2>
+
+          <h2 className="font-display text-2xl font-bold text-ink mb-1">{incoming.callerName}</h2>
           <p className="text-muted mb-8">is calling you...</p>
 
           <div className="flex w-full gap-4">

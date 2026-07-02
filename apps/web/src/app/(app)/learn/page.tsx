@@ -2,7 +2,15 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { CheckCircle2, CircleDot, Circle, GraduationCap, Dumbbell, Flame, Star } from 'lucide-react';
+import {
+  CheckCircle2,
+  CircleDot,
+  Circle,
+  GraduationCap,
+  Dumbbell,
+  Flame,
+  Star,
+} from 'lucide-react';
 import { LESSONS, type LessonProgress, type LessonStatus } from '@signbridge/shared-types';
 import { useAuth } from '@/lib/auth-context';
 import { PageHeader } from '@/components/PageHeader';
@@ -78,7 +86,9 @@ export default function LearnPage() {
               <Flame className="h-6 w-6" fill="currentColor" />
             </div>
             <div>
-              <span className="block font-display text-2xl font-bold text-ink leading-none">{streakDays}</span>
+              <span className="block font-display text-2xl font-bold text-ink leading-none">
+                {streakDays}
+              </span>
               <span className="text-sm font-medium text-muted">Day Streak</span>
             </div>
           </div>
@@ -96,31 +106,34 @@ export default function LearnPage() {
               {xpIntoLevel} / {xpForNextLevel} XP
             </span>
           </div>
-          
+
           <div className="h-3 overflow-hidden rounded-full bg-canvas w-full">
-            <div 
-              className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 transition-all duration-500" 
-              style={{ width: `${levelProgressPct}%` }} 
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 transition-all duration-500"
+              style={{ width: `${levelProgressPct}%` }}
             />
           </div>
-          <p className="mt-2 text-xs text-muted text-right">
-            Total XP: {xp}
-          </p>
+          <p className="mt-2 text-xs text-muted text-right">Total XP: {xp}</p>
         </div>
       </div>
 
       <div className="mb-8">
-        <Link 
-          href="/dictionary" 
+        <Link
+          href="/dictionary"
           className="group flex flex-col sm:flex-row items-center justify-between gap-6 rounded-2xl border border-bridge/20 bg-bridge/5 p-6 transition-all hover:bg-bridge/10 hover:border-bridge/30"
         >
           <div className="flex items-center gap-5">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-bridge/10 text-bridge">
-              <span className="font-display text-2xl font-bold" aria-hidden="true">Aa</span>
+              <span className="font-display text-2xl font-bold" aria-hidden="true">
+                Aa
+              </span>
             </div>
             <div>
               <h2 className="font-display text-xl font-bold text-ink">Sign Language Dictionary</h2>
-              <p className="mt-1 text-sm text-muted max-w-md">Browse our entire 3D animated vocabulary, study hand postures from any angle, and expand your sign language skills.</p>
+              <p className="mt-1 text-sm text-muted max-w-md">
+                Browse our entire 3D animated vocabulary, study hand postures from any angle, and
+                expand your sign language skills.
+              </p>
             </div>
           </div>
           <div className="btn-primary whitespace-nowrap px-6 py-3 shrink-0">Open Dictionary</div>

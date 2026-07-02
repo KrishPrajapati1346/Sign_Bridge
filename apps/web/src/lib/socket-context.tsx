@@ -42,11 +42,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
     };
   }, [accessToken]);
 
-  return (
-    <SocketContext.Provider value={{ socket, connected }}>
-      {children}
-    </SocketContext.Provider>
-  );
+  return <SocketContext.Provider value={{ socket, connected }}>{children}</SocketContext.Provider>;
 }
 
 export function useSocket() {

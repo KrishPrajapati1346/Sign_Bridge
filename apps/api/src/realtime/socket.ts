@@ -4,7 +4,6 @@ import type { SignalMessage } from '@signbridge/shared-types';
 import { env } from '../config/env.js';
 import { verifyAccessToken } from '../lib/jwt.js';
 
-
 interface SocketUser {
   userId: string;
 }
@@ -45,8 +44,9 @@ export function attachSocketServer(httpServer: HttpServer): Server {
     // Allow clients to fetch currently online users
     socket.on('get-online-users', async () => {
       // Find all users who are currently connected
-      const onlineIds = Array.from(io.sockets.adapter.rooms.keys())
-        .filter(key => key !== socket.id && key.length > 20); // Basic heuristic for userId vs socketId
+      const onlineIds = Array.from(io.sockets.adapter.rooms.keys()).filter(
+        (key) => key !== socket.id && key.length > 20,
+      ); // Basic heuristic for userId vs socketId
       socket.emit('online-users', onlineIds);
     });
 
@@ -79,17 +79,17 @@ export function attachSocketServer(httpServer: HttpServer): Server {
         socket.emit('error-message', 'Invalid room.');
         return;
       }
-      
+
       void socket.join(roomId);
       joinedRoom = roomId;
-      
+
       // Get all existing socket IDs in the room (excluding this new socket)
       const room = io.sockets.adapter.rooms.get(roomId);
-      const occupants = room ? Array.from(room).filter(id => id !== socket.id) : [];
-      
+      const occupants = room ? Array.from(room).filter((id) => id !== socket.id) : [];
+
       // Tell the joiner about everyone already here
       socket.emit('room-occupants', occupants);
-      
+
       // Notify everyone else that a new peer joined
       socket.to(roomId).emit('peer-joined', socket.id);
     });

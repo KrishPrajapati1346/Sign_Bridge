@@ -1,5 +1,13 @@
 /** Consistent page title + short context line used across the app shell. */
-export function PageHeader({ title, context, children }: { title: string; context?: string; children?: React.ReactNode }) {
+export function PageHeader({
+  title,
+  context,
+  children,
+}: {
+  title: string;
+  context?: string;
+  children?: React.ReactNode;
+}) {
   return (
     <header className="relative mb-8 animate-fade-up flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
       <div>

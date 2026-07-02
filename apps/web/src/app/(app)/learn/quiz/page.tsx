@@ -36,10 +36,10 @@ function buildQuiz(labels: string[]): Question[] {
   const targets = shuffle(labels).slice(0, Math.min(MAX_QUESTIONS, labels.length));
   return targets.map((target) => {
     const distractors = shuffle(ALL_LABELS.filter((l) => l !== target)).slice(0, 3);
-    return { 
+    return {
       type: 'recognition',
-      target, 
-      options: shuffle([target, ...distractors]) 
+      target,
+      options: shuffle([target, ...distractors]),
     };
   });
 }
@@ -74,7 +74,7 @@ function QuizInner() {
   useEffect(() => {
     if (!finished || savedRef.current) return;
     savedRef.current = true;
-    
+
     // Add XP for the score
     const xpGained = score * XP_PER_CORRECT_ANSWER;
     if (xpGained > 0) {
@@ -134,7 +134,7 @@ function QuizInner() {
           <p className="mt-2 text-sm text-muted">
             {pct >= PASS_PERCENT ? t('learn.quiz.passed') : t('learn.quiz.failed')}
           </p>
-          
+
           {score > 0 && (
             <div className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-yellow-50 py-3 text-yellow-800">
               <Star className="h-5 w-5" fill="currentColor" />

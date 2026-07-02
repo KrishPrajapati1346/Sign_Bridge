@@ -40,7 +40,12 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/sign', label: 'Sign recognition', labelKey: 'nav.sign', icon: Hand },
   { href: '/avatar', label: 'Sign avatar', labelKey: 'nav.avatar', icon: PersonStanding },
   { href: '/translate', label: 'Translate', labelKey: 'nav.translate', icon: Languages },
-  { href: '/translate/document', label: 'Document Translation', labelKey: 'nav.document', icon: Languages },
+  {
+    href: '/translate/document',
+    label: 'Document Translation',
+    labelKey: 'nav.document',
+    icon: Languages,
+  },
   { href: '/learn', label: 'Learn ISL', labelKey: 'nav.learn', icon: GraduationCap },
   {
     href: '/emergency',
@@ -52,8 +57,20 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/history', label: 'History', labelKey: 'nav.history', icon: History },
   { href: '/profile', label: 'Profile', labelKey: 'nav.profile', icon: User },
   { href: '/settings', label: 'Settings', labelKey: 'nav.settings', icon: Settings },
-  { href: '/admin', label: 'Admin Dashboard', labelKey: 'nav.admin', icon: BarChart3, adminOnly: true },
-  { href: '/admin/signs', label: 'Review Signs', labelKey: 'nav.adminSigns', icon: Hand, adminOnly: true },
+  {
+    href: '/admin',
+    label: 'Admin Dashboard',
+    labelKey: 'nav.admin',
+    icon: BarChart3,
+    adminOnly: true,
+  },
+  {
+    href: '/admin/signs',
+    label: 'Review Signs',
+    labelKey: 'nav.adminSigns',
+    icon: Hand,
+    adminOnly: true,
+  },
 ];
 
 export const ROLE_LABELS: Record<string, string> = {

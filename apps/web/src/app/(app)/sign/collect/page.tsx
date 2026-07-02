@@ -175,7 +175,12 @@ export default function CollectPage() {
             {t('signCollect.camera')}
           </h2>
           <div className="relative overflow-hidden rounded-2xl border border-line bg-canvas shadow-soft">
-            <video ref={videoRef} playsInline muted className="aspect-video w-full object-cover -scale-x-100" />
+            <video
+              ref={videoRef}
+              playsInline
+              muted
+              className="aspect-video w-full object-cover -scale-x-100"
+            />
             <canvas
               ref={canvasRef}
               aria-hidden="true"

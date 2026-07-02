@@ -137,23 +137,21 @@ usersRouter.patch(
 
 usersRouter.get(
   '/',
-  asyncHandler(
-    async (req: Request, res: Response<ApiResponse<{ users: UserProfile[] }>>) => {
-      const currentUserId = req.user!.id;
-      
-      const users = await prisma.user.findMany({
-        where: {
-          id: { not: currentUserId }, // Exclude self
-        },
-        orderBy: {
-          name: 'asc',
-        },
-      });
+  asyncHandler(async (req: Request, res: Response<ApiResponse<{ users: UserProfile[] }>>) => {
+    const currentUserId = req.user!.id;
 
-      res.json({
-        success: true,
-        data: { users: users.map(toProfile) },
-      });
-    },
-  ),
+    const users = await prisma.user.findMany({
+      where: {
+        id: { not: currentUserId }, // Exclude self
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+
+    res.json({
+      success: true,
+      data: { users: users.map(toProfile) },
+    });
+  }),
 );

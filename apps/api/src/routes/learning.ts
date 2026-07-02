@@ -27,7 +27,14 @@ learningRouter.get(
   asyncHandler(
     async (
       req: Request,
-      res: Response<ApiResponse<{ xp: number; streakDays: number; lessons: LessonProgressDTO[]; mastery: SignMasteryDTO[] }>>,
+      res: Response<
+        ApiResponse<{
+          xp: number;
+          streakDays: number;
+          lessons: LessonProgressDTO[];
+          mastery: SignMasteryDTO[];
+        }>
+      >,
     ) => {
       const userId = req.user!.id;
       const [user, lessons, mastery] = await Promise.all([
@@ -37,11 +44,11 @@ learningRouter.get(
       ]);
       res.json({
         success: true,
-        data: { 
-          xp: user?.xp ?? 0, 
-          streakDays: user?.streakDays ?? 0, 
-          lessons: lessons.map(toLessonProgress), 
-          mastery: mastery.map(toMastery) 
+        data: {
+          xp: user?.xp ?? 0,
+          streakDays: user?.streakDays ?? 0,
+          lessons: lessons.map(toLessonProgress),
+          mastery: mastery.map(toMastery),
         },
       });
     },
@@ -89,17 +96,16 @@ learningRouter.post(
 learningRouter.post(
   '/xp',
   asyncHandler(
-    async (
-      req: Request,
-      res: Response<ApiResponse<{ xp: number; streakDays: number }>>,
-    ) => {
+    async (req: Request, res: Response<ApiResponse<{ xp: number; streakDays: number }>>) => {
       const userId = req.user!.id;
       const { amount } = req.body;
       const xpToAdd = typeof amount === 'number' ? amount : 10;
 
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user) {
-        res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'User not found' } });
+        res
+          .status(404)
+          .json({ success: false, error: { code: 'NOT_FOUND', message: 'User not found' } });
         return;
       }
 

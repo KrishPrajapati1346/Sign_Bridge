@@ -62,7 +62,11 @@ export default function AdminSignsPage() {
           disabled={retraining}
           className="btn-primary inline-flex items-center gap-2"
         >
-          {retraining ? <Loader2 className="h-5 w-5 animate-spin" /> : <CheckCircle2 className="h-5 w-5" />}
+          {retraining ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <CheckCircle2 className="h-5 w-5" />
+          )}
           {retraining ? 'Retraining Models...' : 'Retrain ML Model'}
         </button>
       </PageHeader>
@@ -103,7 +107,8 @@ export default function AdminSignsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    {sign.user.name || 'Anonymous'} <span className="text-muted block text-xs">{sign.user.email}</span>
+                    {sign.user.name || 'Anonymous'}{' '}
+                    <span className="text-muted block text-xs">{sign.user.email}</span>
                   </td>
                   <td className="px-6 py-4 text-muted whitespace-nowrap">
                     {formatDistanceToNow(new Date(sign.createdAt), { addSuffix: true })}
