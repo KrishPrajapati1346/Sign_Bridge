@@ -402,7 +402,6 @@ export function useMeshCall(roomId: string) {
           try {
             stream = await navigator.mediaDevices.getUserMedia({
               video: { facingMode: { ideal: 'user' } },
-              audio: true,
             });
           } catch (e2) {
             stream = await navigator.mediaDevices.getUserMedia({ audio: true });
