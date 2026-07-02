@@ -20,7 +20,7 @@ const REFRESH_COOKIE = 'sb_refresh';
 function refreshCookieOptions(): CookieOptions {
   return {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: env.isProduction ? 'none' : 'lax',
     secure: env.isProduction,
     path: '/api/auth',
     maxAge: env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000,
