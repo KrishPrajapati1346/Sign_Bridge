@@ -394,7 +394,7 @@ export function useMeshCall(roomId: string) {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: { ideal: 'user' }, width: { ideal: 1280 }, height: { ideal: 720 } },
-          audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+          audio: true,
         });
       } catch (e: any) {
         if (e.name === 'NotFoundError' || e.message?.includes('Requested device not found')) {
@@ -404,7 +404,7 @@ export function useMeshCall(roomId: string) {
               video: { facingMode: { ideal: 'user' } },
             });
           } catch (e2) {
-            stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           }
         } else {
           throw e;
