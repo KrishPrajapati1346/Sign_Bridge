@@ -118,18 +118,9 @@ export default function DocumentsPage() {
   };
 
   return (
-    <div className="animate-fade-up">
-      {/* Print-only View (Hidden on screen) */}
-      {selectedDoc && (
-        <div className="hidden print:block absolute inset-0 bg-white text-black p-8 z-[9999]">
-          <h1 className="text-3xl font-bold mb-2">{selectedDoc.title}</h1>
-          <p className="text-gray-500 mb-8 pb-4 border-b">
-            Translated into {lang === 'hi' ? 'Hindi' : lang === 'gu' ? 'Gujarati' : 'English'} on{' '}
-            {new Date(selectedDoc.createdAt).toLocaleString()}
-          </p>
-          <div className="text-lg whitespace-pre-wrap leading-relaxed">{translatedText}</div>
-        </div>
-      )}
+    <>
+      <div className="animate-fade-up">
+
 
       <div className="print:hidden">
         <PageHeader
@@ -189,6 +180,19 @@ export default function DocumentsPage() {
           </div>
         )}
       </div>
+      </div>
+
+      {/* Print-only View (Hidden on screen) */}
+      {selectedDoc && (
+        <div className="hidden print:block fixed inset-0 bg-white text-black p-8 z-[9999]">
+          <h1 className="text-3xl font-bold mb-2">{selectedDoc.title}</h1>
+          <p className="text-gray-500 mb-8 pb-4 border-b">
+            Translated into {lang === 'hi' ? 'Hindi' : lang === 'gu' ? 'Gujarati' : 'English'} on{' '}
+            {new Date(selectedDoc.createdAt).toLocaleString()}
+          </p>
+          <div className="text-lg whitespace-pre-wrap leading-relaxed">{translatedText}</div>
+        </div>
+      )}
 
       {/* View & Translate Modal */}
       {selectedDoc && (
@@ -283,6 +287,6 @@ export default function DocumentsPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
