@@ -5,9 +5,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useT } from '@/lib/i18n/use-translation';
 import { AuthApiError } from '@/lib/auth-api';
 import { changePassword, updateProfile } from '@/lib/users-api';
-import { setupGesturePassword } from '@/lib/auth-api';
 import { PageHeader } from '@/components/PageHeader';
-import { ISL_VOCABULARY, LABEL_DISPLAY } from '@/lib/sign/vocabulary';
 
 export default function ProfilePage() {
   const { user, authFetch } = useAuth();
@@ -25,7 +23,6 @@ export default function ProfilePage() {
           authFetch={authFetch}
         />
         <PasswordSection authFetch={authFetch} />
-        <GestureAuthSection authFetch={authFetch} />
       </div>
     </div>
   );
@@ -225,72 +222,3 @@ function PasswordSection({ authFetch }: { authFetch: AuthFetch }) {
   );
 }
 
-function GestureAuthSection({ authFetch }: { authFetch: AuthFetch }) {
-  const t = useT();
-  const [gesturePassword, setGesturePassword] = useState<string>('');
-  const [status, setStatus] = useState<'idle' | 'saving'>('idle');
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setStatus('saving');
-    setSuccess(false);
-    setError(null);
-    try {
-      await setupGesturePassword(authFetch, gesturePassword || null);
-      setSuccess(true);
-    } catch (err) {
-      setError(err instanceof AuthApiError ? err.message : 'Failed to save gesture password.');
-    } finally {
-      setStatus('idle');
-    }
-  }
-
-  return (
-    <Card>
-      <h2 className="font-display text-xl font-semibold text-ink">Gesture Authentication</h2>
-      <p className="mt-1 text-sm text-muted">Select a sign from our vocabulary to act as your password. You can use your webcam to log in using this sign!</p>
-
-      <form onSubmit={handleSubmit} className="mt-6 max-w-sm" noValidate>
-        <label htmlFor="gesturePassword" className="block text-sm font-medium text-ink">
-          Secret Gesture Sign
-        </label>
-        <select
-          id="gesturePassword"
-          value={gesturePassword}
-          onChange={(e) => {
-            setGesturePassword(e.target.value);
-            setSuccess(false);
-          }}
-          className={inputClass}
-        >
-          <option value="">None (Disable Gesture Login)</option>
-          {ISL_VOCABULARY.map((label) => (
-            <option key={label} value={label}>
-              {LABEL_DISPLAY[label]}
-            </option>
-          ))}
-        </select>
-
-        {error && (
-          <p role="alert" className="mt-1 text-sm text-beacon">
-            {error}
-          </p>
-        )}
-        {success && (
-          <p role="status" className="mt-1 text-sm text-bridge">
-            Gesture password updated successfully.
-          </p>
-        )}
-        <button
-          type="submit"
-          disabled={status === 'saving'}
-          className="btn-primary mt-4 px-6 py-3 disabled:opacity-60"
-        >
-          {status === 'saving' ? t('profile.saving') : t('profile.saveChanges')}
-        </button>
-      </form>
-    </Card>
-  );
-}

@@ -12,8 +12,6 @@ import {
   register,
   revokeRefreshToken,
   rotateRefreshToken,
-  setGesturePassword,
-  gestureLogin,
 } from '../services/auth.service.js';
 
 const REFRESH_COOKIE = 'sb_refresh';
@@ -61,18 +59,7 @@ authRouter.post(
   }),
 );
 
-authRouter.post(
-  '/gesture-login',
-  asyncHandler(async (req: Request, res: Response<ApiResponse<AuthResult>>) => {
-    const { email, gesturePassword } = req.body;
-    if (!email || !gesturePassword) {
-      throw new HttpError(400, 'BAD_REQUEST', 'Missing email or gesture password.');
-    }
-    const { user, accessToken, refreshToken } = await gestureLogin(email, gesturePassword);
-    setRefreshCookie(res, refreshToken);
-    res.json({ success: true, data: { user, accessToken } });
-  }),
-);
+
 
 authRouter.post(
   '/refresh',
@@ -118,12 +105,4 @@ authRouter.get(
   }),
 );
 
-authRouter.post(
-  '/gesture-setup',
-  requireAuth,
-  asyncHandler(async (req: Request, res: Response<ApiResponse<{ success: true }>>) => {
-    const { gesturePassword } = req.body;
-    await setGesturePassword(req.user!.id, gesturePassword || null);
-    res.json({ success: true, data: { success: true } });
-  }),
-);
+

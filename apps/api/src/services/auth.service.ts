@@ -7,24 +7,7 @@ import { generateRefreshToken, hashToken, signAccessToken } from '../lib/jwt.js'
 import { HttpError } from '../middleware/error.js';
 import type { RegisterInput, LoginInput } from '../validation/auth.schema.js';
 
-export async function setGesturePassword(userId: string, gesturePassword: string | null): Promise<void> {
-  await prisma.user.update({
-    where: { id: userId },
-    data: { gesturePassword },
-  });
-}
 
-export async function gestureLogin(email: string, gesturePassword: string): Promise<AuthTokens> {
-  const user = await prisma.user.findUnique({ where: { email } });
-  
-  if (!user || !user.gesturePassword || user.gesturePassword !== gesturePassword) {
-    throw new HttpError(401, 'INVALID_CREDENTIALS', 'Invalid email or gesture password.');
-  }
-
-  const accessToken = signAccessToken({ sub: user.id, role: user.role });
-  const refreshToken = await issueRefreshToken(user.id);
-  return { user: toAuthUser(user), accessToken, refreshToken };
-}
 
 /** What every auth flow produces: a safe user view plus fresh tokens. */
 export interface AuthTokens {

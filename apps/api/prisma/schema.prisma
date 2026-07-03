@@ -56,7 +56,6 @@ model User {
   email           String         @unique
   name            String?
   passwordHash    String
-  gesturePassword String?
   role            Role           @default(HEARING_USER)
   refreshTokens   RefreshToken[]
   settings          UserSettings?
