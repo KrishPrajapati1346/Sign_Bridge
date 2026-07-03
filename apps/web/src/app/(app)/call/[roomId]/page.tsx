@@ -16,6 +16,9 @@ import {
   MonitorUp,
   MonitorOff,
   User,
+  Maximize,
+  Minimize,
+  Move,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useSettings } from '@/lib/settings-context';
@@ -39,7 +42,7 @@ import { useSocket } from '@/lib/socket-context';
 import { audioManager } from '@/lib/call/audio-manager';
 import { AddParticipantModal } from '@/components/AddParticipantModal';
 
-function RemoteVideo({ stream, captionsEnabled, caption, signEnabled, sign, t }: any) {
+function RemoteVideo({ stream, captionsEnabled, caption, signEnabled, sign, t, isFocused, onFocus, onUnfocus }: any) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -74,6 +77,18 @@ function RemoteVideo({ stream, captionsEnabled, caption, signEnabled, sign, t }:
           {t('call.signPrefix', { sign })}
         </div>
       )}
+      {/* Full Screen Controls */}
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+        {isFocused ? (
+          <button onClick={onUnfocus} className="p-2 bg-black/60 hover:bg-black/90 rounded-lg text-white backdrop-blur-sm" title="Exit Full Screen">
+            <Minimize className="w-4 h-4" />
+          </button>
+        ) : (
+          <button onClick={onFocus} className="p-2 bg-black/60 hover:bg-black/90 rounded-lg text-white backdrop-blur-sm" title="Full Screen">
+            <Maximize className="w-4 h-4" />
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -92,6 +107,8 @@ export default function CallRoomPage({
   const { accessToken, isLoading } = useAuth();
   const startedRef = useRef(false);
   const [rejected, setRejected] = useState(false);
+  const [pipPosition, setPipPosition] = useState<'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'>('bottom-right');
+  const [focusedPeer, setFocusedPeer] = useState<string | null>(null);
 
   const endCallRef = useRef(call.endCall);
   endCallRef.current = call.endCall;
@@ -260,20 +277,26 @@ export default function CallRoomPage({
 
       <div className="relative flex-1 overflow-hidden rounded-2xl border border-line bg-canvas shadow-soft flex">
         {/* Remote videos grid */}
-        <div className={`relative flex-1 bg-canvas grid ${gridCols} gap-2 p-2`}>
+        <div className={`relative flex-1 bg-canvas grid ${focusedPeer ? 'grid-cols-1' : gridCols} gap-2 p-2`}>
           {remotePeerIds.length > 0 ? (
-            remotePeerIds.map((peerId) => (
-              <RemoteVideo
-                key={peerId}
-                peerId={peerId}
-                stream={call.remoteStreams[peerId]}
-                captionsEnabled={call.captionsEnabled}
-                caption={call.captions[peerId]}
-                signEnabled={call.signEnabled}
-                sign={call.remoteSigns[peerId]}
-                t={t}
-              />
-            ))
+            remotePeerIds.map((peerId) => {
+              if (focusedPeer && focusedPeer !== peerId) return null;
+              return (
+                <RemoteVideo
+                  key={peerId}
+                  peerId={peerId}
+                  stream={call.remoteStreams[peerId]}
+                  captionsEnabled={call.captionsEnabled}
+                  caption={call.captions[peerId]}
+                  signEnabled={call.signEnabled}
+                  sign={call.remoteSigns[peerId]}
+                  t={t}
+                  isFocused={focusedPeer === peerId}
+                  onFocus={() => setFocusedPeer(peerId)}
+                  onUnfocus={() => setFocusedPeer(null)}
+                />
+              );
+            })
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted">
               <User aria-hidden="true" className="h-16 w-16 opacity-30" />
@@ -290,7 +313,12 @@ export default function CallRoomPage({
 
         {/* Local video (picture-in-picture). */}
         <div
-          className={`absolute bottom-4 right-4 h-28 w-40 rounded-xl border border-canvas/40 object-cover shadow-lift sm:h-32 sm:w-48 overflow-hidden z-20 ${call.screenEnabled ? '' : '-scale-x-100'}`}
+          className={`absolute h-28 w-40 rounded-xl border border-canvas/40 object-cover shadow-lift sm:h-32 sm:w-48 overflow-hidden z-20 transition-all duration-300 group ${
+            pipPosition === 'top-left' ? 'top-4 left-4' :
+            pipPosition === 'top-right' ? 'top-4 right-4' :
+            pipPosition === 'bottom-left' ? 'bottom-4 left-4' :
+            'bottom-4 right-4'
+          } ${call.screenEnabled ? '' : '-scale-x-100'}`}
         >
           <video
             ref={localVideoRef}
@@ -300,6 +328,20 @@ export default function CallRoomPage({
             aria-label={t('call.yourVideo')}
             className="h-full w-full object-cover"
           />
+          {/* PiP Move Button */}
+          <button
+            onClick={() => setPipPosition(prev => {
+              if (prev === 'bottom-right') return 'bottom-left';
+              if (prev === 'bottom-left') return 'top-left';
+              if (prev === 'top-left') return 'top-right';
+              return 'bottom-right';
+            })}
+            className={`absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/90 backdrop-blur-sm rounded-lg text-white opacity-0 group-hover:opacity-100 transition-opacity z-30 ${call.screenEnabled ? '' : '-scale-x-100'}`}
+            title="Move Video"
+          >
+            <Move className="w-4 h-4" />
+          </button>
+          
           {/* Local Captions overlay */}
           {call.captionsEnabled && call.captions['local'] && (
             <div
