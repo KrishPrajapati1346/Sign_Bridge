@@ -1,14 +1,11 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { CallDataMessage, MessageModality, SignalMessage } from '@signbridge/shared-types';
+import type { CallDataMessage, MessageModality, SignalMessage, LanguageCode } from '@signbridge/shared-types';
 import { useAuth } from '@/lib/auth-context';
 import { useSettings } from '@/lib/settings-context';
 import { useSpeechToText } from '@/lib/speech/use-speech-to-text';
 import { addMessage } from '@/lib/conversations-api';
-import { getHandLandmarker, detect } from '@/lib/sign/hand-landmarker';
-import { extractFeatures } from '@/lib/sign/landmark-features';
-import { loadClassifier, predict } from '@/lib/sign/classifier';
 import { displayLabel } from '@/lib/sign/vocabulary';
 import { translate } from '@/lib/translation-api';
 import { reconstructGrammar } from '@/lib/grammar-api';
@@ -177,6 +174,10 @@ export function useMeshCall(roomId: string, options?: { onDrawMessage?: (peerId:
 
   const startSignLoop = useCallback(async () => {
     if (!localStreamRef.current || signIntervalRef.current) return;
+    const { loadClassifier, predict } = await import('@/lib/sign/classifier');
+    const { getHandLandmarker, detect } = await import('@/lib/sign/hand-landmarker');
+    const { extractFeatures } = await import('@/lib/sign/landmark-features');
+    
     const loaded = await loadClassifier();
     if (!loaded) return;
     const landmarker = await getHandLandmarker();

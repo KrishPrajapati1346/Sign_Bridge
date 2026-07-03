@@ -5,9 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { AuthApiError, gestureLoginRequest } from '@/lib/auth-api';
-import { getHandLandmarker } from '@/lib/sign/hand-landmarker';
-import { predict } from '@/lib/sign/classifier';
-import { extractFeatures } from '@/lib/sign/landmark-features';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -54,6 +51,10 @@ export default function LoginPage() {
       }
       setIsCameraActive(true);
       setGestureStatus('Loading AI...');
+      
+      const { getHandLandmarker } = await import('@/lib/sign/hand-landmarker');
+      const { extractFeatures } = await import('@/lib/sign/landmark-features');
+      const { predict } = await import('@/lib/sign/classifier');
       
       const landmarker = await getHandLandmarker();
       setGestureStatus('Perform your secret sign to login...');

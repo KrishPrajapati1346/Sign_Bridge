@@ -25,7 +25,6 @@ import { useSettings } from '@/lib/settings-context';
 import { useT, type TFunction } from '@/lib/i18n/use-translation';
 import { useMeshCall, type CallStatus } from '@/lib/call/use-mesh-call';
 import { TextToSignAvatar } from '@/lib/avatar/TextToSignAvatar';
-import { getHandLandmarker } from '@/lib/sign/hand-landmarker';
 
 function DrawCanvas({ peerId }: { peerId: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -100,6 +99,7 @@ function LocalDrawOverlay({ videoRef, broadcast }: { videoRef: React.RefObject<H
     let isDrawing = false;
     
     const run = async () => {
+      const { getHandLandmarker } = await import('@/lib/sign/hand-landmarker');
       const landmarker = await getHandLandmarker();
       const canvas = canvasRef.current;
       if (!canvas) return;
