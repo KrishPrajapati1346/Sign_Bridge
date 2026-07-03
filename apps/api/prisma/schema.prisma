@@ -66,6 +66,7 @@ model User {
   emergencyEvents   EmergencyEvent[]
   lessonProgress    LessonProgress[]
   signMastery       SignMastery[]
+  translatedDocs    TranslatedDocument[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   xp                Int                @default(0)
@@ -171,6 +172,18 @@ model QuickPhrase {
 
   @@index([userId])
   @@map("quick_phrases")
+}
+
+model TranslatedDocument {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("translated_documents")
 }
 
 model EmergencyEvent {

@@ -14,6 +14,7 @@ import {
   BarChart3,
   BookA,
   Contact,
+  FileText,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -38,15 +39,10 @@ export const NAV_ITEMS: NavItem[] = [
   { href: '/call', label: 'Video call', labelKey: 'nav.call', icon: Video },
   { href: '/speech', label: 'Speech', labelKey: 'nav.speech', icon: Mic },
   { href: '/sign', label: 'Sign recognition', labelKey: 'nav.sign', icon: Hand },
-  { href: '/avatar', label: 'Sign avatar', labelKey: 'nav.avatar', icon: PersonStanding },
-  { href: '/translate', label: 'Translate', labelKey: 'nav.translate', icon: Languages },
-  {
-    href: '/translate/document',
-    label: 'Document Translation',
-    labelKey: 'nav.document',
-    icon: Languages,
-  },
-  { href: '/learn', label: 'Learn ISL', labelKey: 'nav.learn', icon: GraduationCap },
+  { href: '/avatar', label: '3D Avatar', labelKey: 'nav.avatar', icon: PersonStanding },
+  { href: '/translate/document', label: 'Sign-to-Document', labelKey: 'nav.document', icon: Languages },
+  { href: '/documents', label: 'Saved Documents', labelKey: 'nav.documents', icon: FileText },
+  { href: '/learn', label: 'Learning Center', labelKey: 'nav.learn', icon: GraduationCap },
   {
     href: '/emergency',
     label: 'Emergency',

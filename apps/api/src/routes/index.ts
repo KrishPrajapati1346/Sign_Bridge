@@ -10,17 +10,19 @@ import { emergencyRouter } from './emergency.js';
 import { learningRouter } from './learning.js';
 import { grammarRouter } from './grammar.js';
 import { adminRouter } from './admin.js';
+import { documentsRouter } from './documents.js';
 
-export const apiRouter = Router();
+export const apiRouter: Router = Router();
 
 apiRouter.use('/health', healthRouter);
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/users', usersRouter);
-apiRouter.use('/conversations', conversationsRouter);
-apiRouter.use('/sign-samples', signSamplesRouter);
-apiRouter.use('/translate', translateRouter);
-apiRouter.use('/calls', callsRouter);
 apiRouter.use('/emergency', emergencyRouter);
-apiRouter.use('/learning', learningRouter);
+apiRouter.use('/translate', translateRouter);
 apiRouter.use('/grammar', grammarRouter);
+apiRouter.use('/sign-samples', signSamplesRouter);
+apiRouter.use('/calls', callsRouter);
+apiRouter.use('/conversations', conversationsRouter);
+apiRouter.use('/learning', learningRouter);
 apiRouter.use('/admin', adminRouter);
+apiRouter.use('/documents', documentsRouter);

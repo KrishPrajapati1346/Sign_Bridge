@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { PageHeader } from '@/components/PageHeader';
 import { Upload, FileText, Loader2, Download, RefreshCcw } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { API_URL } from '@/lib/auth-api';
 import { jsPDF } from 'jspdf';
 import { reconstructGrammar } from '@/lib/grammar-api';
 import { getHandLandmarker, detect } from '@/lib/sign/hand-landmarker';
@@ -118,6 +119,18 @@ export default function DocumentUploadPage() {
       const rawText = rawTranscript.join(' ');
       const corrected = await reconstructGrammar(authFetch, rawTranscript, 'en');
       setFinalDocument(corrected);
+
+      try {
+        const titleWords = corrected.split(' ').slice(0, 5).join(' ');
+        await authFetch(`${API_URL}/api/documents`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: titleWords + (corrected.split(' ').length > 5 ? '...' : ''), content: corrected })
+        });
+      } catch (e) {
+        console.error('Failed to save document to history', e);
+      }
+
       setStatus('complete');
     } catch (err: any) {
       setStatus('error');
@@ -170,7 +183,7 @@ export default function DocumentUploadPage() {
               <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-line bg-canvas p-8 hover:bg-line/50 transition">
                 <Upload className="mb-3 h-8 w-8 text-muted" />
                 <span className="font-medium text-ink">Click to upload video</span>
-                <span className="mt-1 text-xs text-muted">MP4, WebM (Max 50MB)</span>
+                <span className="mt-1 text-xs text-muted">MP4, WebM (Max 500MB)</span>
                 <input
                   type="file"
                   accept="video/mp4,video/webm"
