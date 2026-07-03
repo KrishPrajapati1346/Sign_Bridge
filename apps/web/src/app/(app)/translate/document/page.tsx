@@ -32,6 +32,7 @@ export default function DocumentUploadPage() {
   const landmarkerRef = useRef<any>(null);
   const frameRef = useRef<number>(0);
   const lastSignRef = useRef<{ label: string; time: number } | null>(null);
+  const isProcessingRef = useRef<boolean>(false);
 
   useEffect(() => {
     void (async () => {
@@ -65,6 +66,7 @@ export default function DocumentUploadPage() {
     setProgress(0);
     setRawTranscript([]);
     lastSignRef.current = null;
+    isProcessingRef.current = false;
 
     const video = videoRef.current;
     video.currentTime = 0;
@@ -109,6 +111,9 @@ export default function DocumentUploadPage() {
   };
 
   const handleVideoEnd = useCallback(async () => {
+    if (isProcessingRef.current) return;
+    isProcessingRef.current = true;
+
     setStatus('correcting');
 
     try {
