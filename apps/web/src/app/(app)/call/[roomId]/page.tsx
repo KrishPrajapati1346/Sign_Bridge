@@ -18,6 +18,7 @@ import {
   User,
   Maximize,
   Minimize,
+  PenTool,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/auth-context';
@@ -26,7 +27,7 @@ import { useT, type TFunction } from '@/lib/i18n/use-translation';
 import { useMeshCall, type CallStatus } from '@/lib/call/use-mesh-call';
 import { TextToSignAvatar } from '@/lib/avatar/TextToSignAvatar';
 
-function DrawCanvas({ peerId }: { peerId: string }) {
+function DrawCanvas({ peerId, videoRef }: { peerId: string, videoRef: React.RefObject<HTMLVideoElement> }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   useEffect(() => {
@@ -41,6 +42,13 @@ function DrawCanvas({ peerId }: { peerId: string }) {
 
     const handleDraw = (e: CustomEvent) => {
       const msg = e.detail;
+      const video = videoRef.current;
+      if (video && (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight)) {
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+        }
+      }
       const x = msg.x * canvas.width;
       const y = msg.y * canvas.height;
       
@@ -51,13 +59,12 @@ function DrawCanvas({ peerId }: { peerId: string }) {
       } else if (msg.type === 'move' && isDrawing) {
         ctx.beginPath();
         ctx.strokeStyle = msg.color || '#00ffcc';
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 6;
         ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.moveTo(lastX, lastY);
         ctx.lineTo(x, y);
         ctx.stroke();
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = msg.color || '#00ffcc';
         lastX = x;
         lastY = y;
       } else if (msg.type === 'end') {
@@ -68,7 +75,6 @@ function DrawCanvas({ peerId }: { peerId: string }) {
     const listener = handleDraw as EventListener;
     window.addEventListener(`draw-${peerId}`, listener);
     
-    // Fade out canvas slowly over time to clear drawings
     const fadeInterval = setInterval(() => {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -78,23 +84,27 @@ function DrawCanvas({ peerId }: { peerId: string }) {
       window.removeEventListener(`draw-${peerId}`, listener);
       clearInterval(fadeInterval);
     };
-  }, [peerId]);
+  }, [peerId, videoRef]);
   
   return (
     <canvas 
       ref={canvasRef} 
-      width={800} 
-      height={600} 
-      className="absolute inset-0 w-full h-full pointer-events-none z-10" 
+      className="absolute inset-0 w-full h-full pointer-events-none z-10 object-cover" 
       style={{ mixBlendMode: 'screen' }}
     />
   );
 }
 
-function LocalDrawOverlay({ videoRef, broadcast }: { videoRef: React.RefObject<HTMLVideoElement>, broadcast: any }) {
+function LocalDrawOverlay({ videoRef, broadcast, enabled }: { videoRef: React.RefObject<HTMLVideoElement>, broadcast: any, enabled: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   useEffect(() => {
+    if (!enabled) {
+      // Send end event when disabled
+      broadcast({ kind: 'draw', type: 'end', x: 0, y: 0 });
+      return;
+    }
+    
     let active = true;
     let isDrawing = false;
     
@@ -108,6 +118,8 @@ function LocalDrawOverlay({ videoRef, broadcast }: { videoRef: React.RefObject<H
       
       let lastX = 0;
       let lastY = 0;
+      let smoothX = 0;
+      let smoothY = 0;
 
       const fadeInterval = setInterval(() => {
         ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
@@ -122,46 +134,55 @@ function LocalDrawOverlay({ videoRef, broadcast }: { videoRef: React.RefObject<H
         
         const video = videoRef.current;
         if (video && video.readyState >= 2) {
+          if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+            if (video.videoWidth > 0 && video.videoHeight > 0) {
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+            }
+          }
           const results = landmarker.detectForVideo(video, performance.now());
           if (results.landmarks.length > 0) {
             const marks = results.landmarks[0];
             const indexTip = marks[8];
             const thumbTip = marks[4];
             
-            // Calculate distance between thumb and index finger tip
             const dist = Math.sqrt(Math.pow(indexTip.x - thumbTip.x, 2) + Math.pow(indexTip.y - thumbTip.y, 2));
             const color = '#ff00cc';
             
-            // Note: because the video might be mirrored via CSS -scale-x-100, we should flip X.
-            // Wait, we just pass the coordinates, if both sides mirror their own video, the draw canvas will just match.
-            // Wait, LocalVideo is mirrored, RemoteVideo is NOT mirrored. So we flip X for local drawing.
-            const rawX = 1.0 - indexTip.x;
-            const x = rawX * canvas.width;
-            const y = indexTip.y * canvas.height;
+            // EMA smoothing
+            if (smoothX === 0 && smoothY === 0) {
+              smoothX = indexTip.x;
+              smoothY = indexTip.y;
+            } else {
+              smoothX = smoothX * 0.5 + indexTip.x * 0.5;
+              smoothY = smoothY * 0.5 + indexTip.y * 0.5;
+            }
+            
+            const x = smoothX * canvas.width;
+            const y = smoothY * canvas.height;
 
-            if (dist < 0.05) { // Pinch threshold
+            if (dist < 0.05) { 
               if (!isDrawing) {
                 isDrawing = true;
                 lastX = x;
                 lastY = y;
-                broadcast({ kind: 'draw', type: 'start', x: rawX, y: indexTip.y, color });
+                broadcast({ kind: 'draw', type: 'start', x: smoothX, y: smoothY, color });
               } else {
                 ctx.beginPath();
                 ctx.strokeStyle = color;
-                ctx.lineWidth = 4;
+                ctx.lineWidth = 6;
                 ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
                 ctx.moveTo(lastX, lastY);
                 ctx.lineTo(x, y);
                 ctx.stroke();
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = color;
                 lastX = x;
                 lastY = y;
-                broadcast({ kind: 'draw', type: 'move', x: rawX, y: indexTip.y, color });
+                broadcast({ kind: 'draw', type: 'move', x: smoothX, y: smoothY, color });
               }
             } else if (isDrawing) {
               isDrawing = false;
-              broadcast({ kind: 'draw', type: 'end', x: rawX, y: indexTip.y, color });
+              broadcast({ kind: 'draw', type: 'end', x: smoothX, y: smoothY, color });
             }
           } else if (isDrawing) {
             isDrawing = false;
@@ -176,14 +197,14 @@ function LocalDrawOverlay({ videoRef, broadcast }: { videoRef: React.RefObject<H
     
     run();
     return () => { active = false; };
-  }, [videoRef, broadcast]);
+  }, [videoRef, broadcast, enabled]);
+
+  if (!enabled) return null;
 
   return (
     <canvas 
       ref={canvasRef} 
-      width={800} 
-      height={600} 
-      className="absolute inset-0 w-full h-full pointer-events-none z-10" 
+      className="absolute inset-0 w-full h-full pointer-events-none z-10 -scale-x-100 object-cover" 
       style={{ mixBlendMode: 'screen' }}
     />
   );
@@ -224,7 +245,7 @@ function RemoteVideo({ peerId, stream, captionsEnabled, caption, signEnabled, si
         aria-label={t('call.remoteVideo')}
         className="h-full w-full object-cover"
       />
-      <DrawCanvas peerId={peerId} />
+      <DrawCanvas peerId={peerId} videoRef={videoRef} />
       {captionsEnabled && caption && (
         <div
           aria-live="polite"
@@ -268,6 +289,7 @@ export default function CallRoomPage({
   const containerRef = useRef<HTMLDivElement>(null);
   const mainWrapperRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [drawEnabled, setDrawEnabled] = useState(false);
 
   const endCallRef = useRef(call.endCall);
   endCallRef.current = call.endCall;
@@ -501,7 +523,7 @@ export default function CallRoomPage({
             aria-label={t('call.yourVideo')}
             className="h-full w-full object-cover pointer-events-none"
           />
-          <LocalDrawOverlay videoRef={localVideoRef} broadcast={call.broadcastToPeers} />
+          <LocalDrawOverlay videoRef={localVideoRef} broadcast={call.broadcastToPeers} enabled={drawEnabled} />
           
           {/* Local Captions overlay */}
           {call.captionsEnabled && call.captions['local'] && (
@@ -575,6 +597,14 @@ export default function CallRoomPage({
             )
           }
           text={call.screenEnabled ? 'Stop sharing' : 'Share screen'}
+        />
+
+        <ControlButton
+          onClick={() => setDrawEnabled(!drawEnabled)}
+          pressed={drawEnabled}
+          label={drawEnabled ? 'Disable Air Drawing' : 'Enable Air Drawing'}
+          icon={<PenTool className="h-5 w-5" />}
+          text={drawEnabled ? 'Drawing On' : 'Drawing Off'}
         />
 
         <ControlButton
