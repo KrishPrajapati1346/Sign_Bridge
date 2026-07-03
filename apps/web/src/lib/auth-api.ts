@@ -56,6 +56,10 @@ export function loginRequest(payload: LoginPayload): Promise<AuthResult> {
   return postJson<AuthResult>('/api/auth/login', payload);
 }
 
+export function gestureLoginRequest(email: string, gesturePassword: string): Promise<AuthResult> {
+  return postJson<AuthResult>('/api/auth/gesture-login', { email, gesturePassword });
+}
+
 /** Silent refresh — relies on the httpOnly sb_refresh cookie. */
 export function refreshRequest(): Promise<{ accessToken: string }> {
   return postJson<{ accessToken: string }>('/api/auth/refresh');
@@ -76,6 +80,19 @@ export async function meRequest(accessToken: string): Promise<AuthUser> {
     throw new AuthApiError(json.error.code, json.error.message, json.error.details);
   }
   return json.data.user;
+}
+
+export async function setupGesturePassword(authFetch: any, gesturePassword: string | null): Promise<{ success: true }> {
+  const res = await authFetch(`${API_URL}/api/auth/gesture-setup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ gesturePassword }),
+  });
+  const json = await res.json();
+  if (!json.success) {
+    throw new AuthApiError(json.error.code, json.error.message, json.error.details);
+  }
+  return json.data;
 }
 
 export { API_URL };

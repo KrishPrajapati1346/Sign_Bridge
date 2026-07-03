@@ -25,6 +25,169 @@ import { useSettings } from '@/lib/settings-context';
 import { useT, type TFunction } from '@/lib/i18n/use-translation';
 import { useMeshCall, type CallStatus } from '@/lib/call/use-mesh-call';
 import { TextToSignAvatar } from '@/lib/avatar/TextToSignAvatar';
+import { getHandLandmarker } from '@/lib/sign/hand-landmarker';
+
+function DrawCanvas({ peerId }: { peerId: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    let isDrawing = false;
+    let lastX = 0;
+    let lastY = 0;
+
+    const handleDraw = (e: CustomEvent) => {
+      const msg = e.detail;
+      const x = msg.x * canvas.width;
+      const y = msg.y * canvas.height;
+      
+      if (msg.type === 'start') {
+        isDrawing = true;
+        lastX = x;
+        lastY = y;
+      } else if (msg.type === 'move' && isDrawing) {
+        ctx.beginPath();
+        ctx.strokeStyle = msg.color || '#00ffcc';
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = msg.color || '#00ffcc';
+        lastX = x;
+        lastY = y;
+      } else if (msg.type === 'end') {
+        isDrawing = false;
+      }
+    };
+    
+    const listener = handleDraw as EventListener;
+    window.addEventListener(`draw-${peerId}`, listener);
+    
+    // Fade out canvas slowly over time to clear drawings
+    const fadeInterval = setInterval(() => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }, 50);
+    
+    return () => {
+      window.removeEventListener(`draw-${peerId}`, listener);
+      clearInterval(fadeInterval);
+    };
+  }, [peerId]);
+  
+  return (
+    <canvas 
+      ref={canvasRef} 
+      width={800} 
+      height={600} 
+      className="absolute inset-0 w-full h-full pointer-events-none z-10" 
+      style={{ mixBlendMode: 'screen' }}
+    />
+  );
+}
+
+function LocalDrawOverlay({ videoRef, broadcast }: { videoRef: React.RefObject<HTMLVideoElement>, broadcast: any }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  useEffect(() => {
+    let active = true;
+    let isDrawing = false;
+    
+    const run = async () => {
+      const landmarker = await getHandLandmarker();
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      
+      let lastX = 0;
+      let lastY = 0;
+
+      const fadeInterval = setInterval(() => {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }, 50);
+
+      const loop = () => {
+        if (!active) {
+          clearInterval(fadeInterval);
+          return;
+        }
+        
+        const video = videoRef.current;
+        if (video && video.readyState >= 2) {
+          const results = landmarker.detectForVideo(video, performance.now());
+          if (results.landmarks.length > 0) {
+            const marks = results.landmarks[0];
+            const indexTip = marks[8];
+            const thumbTip = marks[4];
+            
+            // Calculate distance between thumb and index finger tip
+            const dist = Math.sqrt(Math.pow(indexTip.x - thumbTip.x, 2) + Math.pow(indexTip.y - thumbTip.y, 2));
+            const color = '#ff00cc';
+            
+            // Note: because the video might be mirrored via CSS -scale-x-100, we should flip X.
+            // Wait, we just pass the coordinates, if both sides mirror their own video, the draw canvas will just match.
+            // Wait, LocalVideo is mirrored, RemoteVideo is NOT mirrored. So we flip X for local drawing.
+            const rawX = 1.0 - indexTip.x;
+            const x = rawX * canvas.width;
+            const y = indexTip.y * canvas.height;
+
+            if (dist < 0.05) { // Pinch threshold
+              if (!isDrawing) {
+                isDrawing = true;
+                lastX = x;
+                lastY = y;
+                broadcast({ kind: 'draw', type: 'start', x: rawX, y: indexTip.y, color });
+              } else {
+                ctx.beginPath();
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = color;
+                lastX = x;
+                lastY = y;
+                broadcast({ kind: 'draw', type: 'move', x: rawX, y: indexTip.y, color });
+              }
+            } else if (isDrawing) {
+              isDrawing = false;
+              broadcast({ kind: 'draw', type: 'end', x: rawX, y: indexTip.y, color });
+            }
+          } else if (isDrawing) {
+            isDrawing = false;
+            broadcast({ kind: 'draw', type: 'end', x: 0, y: 0 });
+          }
+        }
+        requestAnimationFrame(loop);
+      };
+      
+      requestAnimationFrame(loop);
+    };
+    
+    run();
+    return () => { active = false; };
+  }, [videoRef, broadcast]);
+
+  return (
+    <canvas 
+      ref={canvasRef} 
+      width={800} 
+      height={600} 
+      className="absolute inset-0 w-full h-full pointer-events-none z-10" 
+      style={{ mixBlendMode: 'screen' }}
+    />
+  );
+}
 
 function statusText(t: TFunction, status: CallStatus): string {
   const map: Record<CallStatus, string> = {
@@ -42,7 +205,7 @@ import { useSocket } from '@/lib/socket-context';
 import { audioManager } from '@/lib/call/audio-manager';
 import { AddParticipantModal } from '@/components/AddParticipantModal';
 
-function RemoteVideo({ stream, captionsEnabled, caption, signEnabled, sign, t }: any) {
+function RemoteVideo({ peerId, stream, captionsEnabled, caption, signEnabled, sign, t }: any) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -61,6 +224,7 @@ function RemoteVideo({ stream, captionsEnabled, caption, signEnabled, sign, t }:
         aria-label={t('call.remoteVideo')}
         className="h-full w-full object-cover"
       />
+      <DrawCanvas peerId={peerId} />
       {captionsEnabled && caption && (
         <div
           aria-live="polite"
@@ -90,7 +254,12 @@ export default function CallRoomPage({
 }) {
   const { settings } = useSettings();
   const t = useT();
-  const call = useMeshCall(params.roomId);
+  const call = useMeshCall(params.roomId, {
+    onDrawMessage: (peerId, msg) => {
+      const ev = new CustomEvent(`draw-${peerId}`, { detail: msg });
+      window.dispatchEvent(ev);
+    }
+  });
   const { socket } = useSocket();
   const { accessToken, isLoading } = useAuth();
   const startedRef = useRef(false);
@@ -332,6 +501,7 @@ export default function CallRoomPage({
             aria-label={t('call.yourVideo')}
             className="h-full w-full object-cover pointer-events-none"
           />
+          <LocalDrawOverlay videoRef={localVideoRef} broadcast={call.broadcastToPeers} />
           
           {/* Local Captions overlay */}
           {call.captionsEnabled && call.captions['local'] && (

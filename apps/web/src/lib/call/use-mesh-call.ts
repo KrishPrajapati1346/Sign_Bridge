@@ -36,7 +36,7 @@ function readStoredConfig(roomId: string): StoredCallConfig | null {
   }
 }
 
-export function useMeshCall(roomId: string) {
+export function useMeshCall(roomId: string, options?: { onDrawMessage?: (peerId: string, msg: any) => void }) {
   const { authFetch, accessToken } = useAuth();
   const { socket } = useSocket();
   const { settings } = useSettings();
@@ -305,7 +305,7 @@ export function useMeshCall(roomId: string) {
               updateCaption(msg.text, msg.final);
               if (msg.final) persist('SPEECH', msg.text, 'PARTNER');
             }
-          } else {
+          } else if (msg.kind === 'sign') {
             if (msg.final) {
               setRemoteSigns((prev) => ({ ...prev, [peerId]: msg.text }));
               persist('SIGN', msg.text, 'PARTNER');
@@ -336,6 +336,8 @@ export function useMeshCall(roomId: string) {
                 });
               }, 2500);
             }
+          } else if (msg.kind === 'draw') {
+            options?.onDrawMessage?.(peerId, msg);
           }
         },
         onSignal: (msg) => signaling.sendSignal({ ...msg, toId: peerId }),
@@ -596,5 +598,6 @@ export function useMeshCall(roomId: string) {
     toggleCaptions,
     toggleSignOverlay,
     toggleScreenShare,
+    broadcastToPeers,
   };
 }

@@ -285,7 +285,8 @@ export interface CreateCallResult {
 /** Messages exchanged over the WebRTC data channel during a call. */
 export type CallDataMessage =
   | { kind: 'caption'; text: string; language: LanguageCode; final: boolean }
-  | { kind: 'sign'; text: string; final: boolean };
+  | { kind: 'sign'; text: string; final: boolean }
+  | { kind: 'draw'; type: 'start' | 'move' | 'end'; x: number; y: number; color?: string; };
 
 /**
  * ICE candidate payload. Structurally compatible with the browser's
