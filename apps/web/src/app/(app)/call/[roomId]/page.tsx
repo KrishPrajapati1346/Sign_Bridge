@@ -13,6 +13,7 @@ import {
   PhoneOff,
   AlertCircle,
   Loader2,
+  MonitorUp,
   MonitorOff,
   User,
   Maximize,
