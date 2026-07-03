@@ -192,8 +192,8 @@ export default function DocumentsPage() {
 
       {/* View & Translate Modal */}
       {selectedDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 print:hidden">
-          <div className="bg-surface border border-line rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/60 backdrop-blur-sm p-4 pt-10 sm:pt-20 print:hidden">
+          <div className="bg-surface border border-line rounded-2xl w-full max-w-3xl flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 mb-10">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-6 border-b border-line bg-canvas/50 rounded-t-2xl">
               <div className="flex items-center gap-3">
