@@ -13,13 +13,12 @@ import {
   PhoneOff,
   AlertCircle,
   Loader2,
-  MonitorUp,
   MonitorOff,
   User,
   Maximize,
   Minimize,
-  Move,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/auth-context';
 import { useSettings } from '@/lib/settings-context';
 import { useT, type TFunction } from '@/lib/i18n/use-translation';
@@ -42,7 +41,7 @@ import { useSocket } from '@/lib/socket-context';
 import { audioManager } from '@/lib/call/audio-manager';
 import { AddParticipantModal } from '@/components/AddParticipantModal';
 
-function RemoteVideo({ stream, captionsEnabled, caption, signEnabled, sign, t, isFocused, onFocus, onUnfocus }: any) {
+function RemoteVideo({ stream, captionsEnabled, caption, signEnabled, sign, t }: any) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -77,18 +76,6 @@ function RemoteVideo({ stream, captionsEnabled, caption, signEnabled, sign, t, i
           {t('call.signPrefix', { sign })}
         </div>
       )}
-      {/* Full Screen Controls */}
-      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-        {isFocused ? (
-          <button onClick={onUnfocus} className="p-2 bg-black/60 hover:bg-black/90 rounded-lg text-white backdrop-blur-sm" title="Exit Full Screen">
-            <Minimize className="w-4 h-4" />
-          </button>
-        ) : (
-          <button onClick={onFocus} className="p-2 bg-black/60 hover:bg-black/90 rounded-lg text-white backdrop-blur-sm" title="Full Screen">
-            <Maximize className="w-4 h-4" />
-          </button>
-        )}
-      </div>
     </div>
   );
 }
@@ -107,8 +94,10 @@ export default function CallRoomPage({
   const { accessToken, isLoading } = useAuth();
   const startedRef = useRef(false);
   const [rejected, setRejected] = useState(false);
-  const [pipPosition, setPipPosition] = useState<'bottom-right' | 'bottom-left' | 'top-right' | 'top-left'>('bottom-right');
-  const [focusedPeer, setFocusedPeer] = useState<string | null>(null);
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mainWrapperRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const endCallRef = useRef(call.endCall);
   endCallRef.current = call.endCall;
@@ -222,6 +211,27 @@ export default function CallRoomPage({
     }
   }, [call.localStream]);
 
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    if (!mainWrapperRef.current) return;
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await mainWrapperRef.current.requestFullscreen();
+      }
+    } catch (err) {
+      console.error('Error toggling fullscreen', err);
+    }
+  };
+
   if (rejected) {
     return (
       <div className="card mx-auto max-w-md animate-fade-up p-8 text-center">
@@ -255,7 +265,7 @@ export default function CallRoomPage({
         : 'grid-cols-1';
 
   return (
-    <div className="animate-fade-up flex flex-col h-[calc(100vh-8rem)]">
+    <div ref={mainWrapperRef} className={`animate-fade-up flex flex-col ${isFullscreen ? 'h-screen w-screen bg-canvas p-4' : 'h-[calc(100vh-8rem)]'}`}>
       {/* Connection status — icon + text, announced politely. */}
       <p aria-live="polite" className="chip mb-3 inline-flex normal-case tracking-normal text-ink">
         {call.status === 'connected' ? (
@@ -275,28 +285,22 @@ export default function CallRoomPage({
             : statusText(t, call.status)}
       </p>
 
-      <div className="relative flex-1 overflow-hidden rounded-2xl border border-line bg-canvas shadow-soft flex">
+      <div ref={containerRef} className="relative flex-1 overflow-hidden rounded-2xl border border-line bg-canvas shadow-soft flex">
         {/* Remote videos grid */}
-        <div className={`relative flex-1 bg-canvas grid ${focusedPeer ? 'grid-cols-1' : gridCols} gap-2 p-2`}>
+        <div className={`relative flex-1 bg-canvas grid ${gridCols} gap-2 p-2`}>
           {remotePeerIds.length > 0 ? (
-            remotePeerIds.map((peerId) => {
-              if (focusedPeer && focusedPeer !== peerId) return null;
-              return (
-                <RemoteVideo
-                  key={peerId}
-                  peerId={peerId}
-                  stream={call.remoteStreams[peerId]}
-                  captionsEnabled={call.captionsEnabled}
-                  caption={call.captions[peerId]}
-                  signEnabled={call.signEnabled}
-                  sign={call.remoteSigns[peerId]}
-                  t={t}
-                  isFocused={focusedPeer === peerId}
-                  onFocus={() => setFocusedPeer(peerId)}
-                  onUnfocus={() => setFocusedPeer(null)}
-                />
-              );
-            })
+            remotePeerIds.map((peerId) => (
+              <RemoteVideo
+                key={peerId}
+                peerId={peerId}
+                stream={call.remoteStreams[peerId]}
+                captionsEnabled={call.captionsEnabled}
+                caption={call.captions[peerId]}
+                signEnabled={call.signEnabled}
+                sign={call.remoteSigns[peerId]}
+                t={t}
+              />
+            ))
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted">
               <User aria-hidden="true" className="h-16 w-16 opacity-30" />
@@ -312,13 +316,12 @@ export default function CallRoomPage({
         )}
 
         {/* Local video (picture-in-picture). */}
-        <div
-          className={`absolute h-28 w-40 rounded-xl border border-canvas/40 object-cover shadow-lift sm:h-32 sm:w-48 overflow-hidden z-20 transition-all duration-300 group ${
-            pipPosition === 'top-left' ? 'top-4 left-4' :
-            pipPosition === 'top-right' ? 'top-4 right-4' :
-            pipPosition === 'bottom-left' ? 'bottom-4 left-4' :
-            'bottom-4 right-4'
-          } ${call.screenEnabled ? '' : '-scale-x-100'}`}
+        <motion.div
+          drag
+          dragConstraints={containerRef}
+          dragElastic={0.1}
+          dragMomentum={false}
+          className={`absolute bottom-4 right-4 h-28 w-40 rounded-xl border border-canvas/40 object-cover shadow-lift sm:h-32 sm:w-48 overflow-hidden z-20 transition-transform cursor-grab active:cursor-grabbing ${call.screenEnabled ? '' : '-scale-x-100'}`}
         >
           <video
             ref={localVideoRef}
@@ -326,21 +329,8 @@ export default function CallRoomPage({
             playsInline
             muted
             aria-label={t('call.yourVideo')}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover pointer-events-none"
           />
-          {/* PiP Move Button */}
-          <button
-            onClick={() => setPipPosition(prev => {
-              if (prev === 'bottom-right') return 'bottom-left';
-              if (prev === 'bottom-left') return 'top-left';
-              if (prev === 'top-left') return 'top-right';
-              return 'bottom-right';
-            })}
-            className={`absolute top-2 right-2 p-1.5 bg-black/60 hover:bg-black/90 backdrop-blur-sm rounded-lg text-white opacity-0 group-hover:opacity-100 transition-opacity z-30 ${call.screenEnabled ? '' : '-scale-x-100'}`}
-            title="Move Video"
-          >
-            <Move className="w-4 h-4" />
-          </button>
           
           {/* Local Captions overlay */}
           {call.captionsEnabled && call.captions['local'] && (
@@ -361,7 +351,7 @@ export default function CallRoomPage({
               {t('call.signPrefix', { sign: call.remoteSigns['local'] })}
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
 
       {/* Controls bar. */}
@@ -414,6 +404,20 @@ export default function CallRoomPage({
             )
           }
           text={call.screenEnabled ? 'Stop sharing' : 'Share screen'}
+        />
+
+        <ControlButton
+          onClick={toggleFullscreen}
+          pressed={isFullscreen}
+          label={isFullscreen ? 'Exit full screen' : 'Full screen'}
+          icon={
+            isFullscreen ? (
+              <Minimize className="h-5 w-5" />
+            ) : (
+              <Maximize className="h-5 w-5" />
+            )
+          }
+          text={isFullscreen ? 'Exit FS' : 'Full Screen'}
         />
 
         {/* Add Participant Modal component handling its own UI state */}
