@@ -516,23 +516,26 @@ export default function CallRoomPage({
           dragConstraints={containerRef}
           dragElastic={0.1}
           dragMomentum={false}
-          className={`absolute bottom-4 right-4 h-28 w-40 rounded-xl border border-canvas/40 object-cover shadow-lift sm:h-32 sm:w-48 overflow-hidden z-20 transition-transform cursor-grab active:cursor-grabbing ${call.screenEnabled ? '' : '-scale-x-100'}`}
+          className="absolute bottom-4 right-4 h-28 w-40 rounded-xl border border-canvas/40 object-cover shadow-lift sm:h-32 sm:w-48 overflow-hidden z-20 transition-transform cursor-grab active:cursor-grabbing"
         >
-          <video
-            ref={localVideoRef}
-            autoPlay
-            playsInline
-            muted
-            aria-label={t('call.yourVideo')}
-            className="h-full w-full object-cover pointer-events-none"
-          />
+          <div className={`absolute inset-0 w-full h-full pointer-events-none ${call.screenEnabled ? '' : '-scale-x-100'}`}>
+            <video
+              ref={localVideoRef}
+              autoPlay
+              playsInline
+              muted
+              aria-label={t('call.yourVideo')}
+              className="h-full w-full object-cover pointer-events-none"
+            />
+          </div>
+          
           <LocalDrawOverlay videoRef={localVideoRef} broadcast={call.broadcastToPeers} enabled={drawEnabled} />
           
           {/* Local Captions overlay */}
           {call.captionsEnabled && call.captions['local'] && (
             <div
               aria-live="polite"
-              className={`absolute inset-x-0 bottom-0 bg-zinc-900/70 px-2 py-1 text-center text-xs sm:text-sm font-semibold text-zinc-50 ${call.screenEnabled ? '' : '-scale-x-100'}`}
+              className="absolute inset-x-0 bottom-0 bg-zinc-900/70 px-2 py-1 text-center text-xs sm:text-sm font-semibold text-zinc-50"
             >
               {call.captions['local']}
             </div>
@@ -542,7 +545,7 @@ export default function CallRoomPage({
           {call.signEnabled && call.remoteSigns['local'] && (
             <div
               aria-live="polite"
-              className={`absolute left-2 top-2 rounded-lg bg-signal/90 px-2 py-1 text-xs font-semibold text-surface max-w-[80%] truncate ${call.screenEnabled ? '' : '-scale-x-100'}`}
+              className="absolute left-2 top-2 rounded-lg bg-signal/90 px-2 py-1 text-xs font-semibold text-surface max-w-[80%] truncate"
             >
               {t('call.signPrefix', { sign: call.remoteSigns['local'] })}
             </div>
