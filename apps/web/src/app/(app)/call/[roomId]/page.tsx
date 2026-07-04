@@ -51,6 +51,11 @@ function DrawCanvas({ peerId, videoRef }: { peerId: string, videoRef: React.RefO
       }
       const x = msg.x * canvas.width;
       const y = msg.y * canvas.height;
+      if (msg.type === 'clear') {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        isDrawing = false;
+        return;
+      }
       
       if (msg.type === 'start') {
         isDrawing = true;
@@ -75,14 +80,8 @@ function DrawCanvas({ peerId, videoRef }: { peerId: string, videoRef: React.RefO
     const listener = handleDraw as EventListener;
     window.addEventListener(`draw-${peerId}`, listener);
     
-    const fadeInterval = setInterval(() => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }, 50);
-    
     return () => {
       window.removeEventListener(`draw-${peerId}`, listener);
-      clearInterval(fadeInterval);
     };
   }, [peerId, videoRef]);
   
@@ -100,8 +99,12 @@ function LocalDrawOverlay({ videoRef, broadcast, enabled }: { videoRef: React.Re
   
   useEffect(() => {
     if (!enabled) {
-      // Send end event when disabled
-      broadcast({ kind: 'draw', type: 'end', x: 0, y: 0 });
+      const canvas = canvasRef.current;
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        ctx?.clearRect(0, 0, canvas.width, canvas.height);
+      }
+      broadcast({ kind: 'draw', type: 'clear' });
       return;
     }
     
@@ -121,14 +124,8 @@ function LocalDrawOverlay({ videoRef, broadcast, enabled }: { videoRef: React.Re
       let smoothX = 0;
       let smoothY = 0;
 
-      const fadeInterval = setInterval(() => {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      }, 50);
-
       const loop = () => {
         if (!active) {
-          clearInterval(fadeInterval);
           return;
         }
         
@@ -144,10 +141,15 @@ function LocalDrawOverlay({ videoRef, broadcast, enabled }: { videoRef: React.Re
           if (results.landmarks.length > 0) {
             const marks = results.landmarks[0];
             const indexTip = marks[8];
-            const thumbTip = marks[4];
+            const wrist = marks[0];
+            const distIndex = Math.hypot(indexTip.x - wrist.x, indexTip.y - wrist.y);
+            const distMiddle = Math.hypot(marks[12].x - wrist.x, marks[12].y - wrist.y);
+            const distRing = Math.hypot(marks[16].x - wrist.x, marks[16].y - wrist.y);
+            const distPinky = Math.hypot(marks[20].x - wrist.x, marks[20].y - wrist.y);
             
-            const dist = Math.sqrt(Math.pow(indexTip.x - thumbTip.x, 2) + Math.pow(indexTip.y - thumbTip.y, 2));
-            const color = '#ff00cc';
+            // Check if pointing (index extended, others folded relative to wrist)
+            const isPointing = distIndex > distMiddle * 1.5 && distIndex > distRing * 1.5 && distIndex > distPinky * 1.5;
+            const color = '#39FF14';
             
             // EMA smoothing
             if (smoothX === 0 && smoothY === 0) {
@@ -158,10 +160,11 @@ function LocalDrawOverlay({ videoRef, broadcast, enabled }: { videoRef: React.Re
               smoothY = smoothY * 0.5 + indexTip.y * 0.5;
             }
             
-            const x = smoothX * canvas.width;
+            // Unmirrored canvas, so we manually flip X for local drawing to match the mirrored video.
+            const x = (1.0 - smoothX) * canvas.width;
             const y = smoothY * canvas.height;
 
-            if (dist < 0.05) { 
+            if (isPointing) { 
               if (!isDrawing) {
                 isDrawing = true;
                 lastX = x;
@@ -204,7 +207,7 @@ function LocalDrawOverlay({ videoRef, broadcast, enabled }: { videoRef: React.Re
   return (
     <canvas 
       ref={canvasRef} 
-      className="absolute inset-0 w-full h-full pointer-events-none z-10 -scale-x-100 object-cover" 
+      className="absolute inset-0 w-full h-full pointer-events-none z-10 object-cover" 
       style={{ mixBlendMode: 'screen' }}
     />
   );
