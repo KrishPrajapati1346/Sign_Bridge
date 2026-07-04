@@ -22,8 +22,9 @@ export default function DictionaryPage() {
   );
 
   return (
-    <div className="animate-fade-up">
-      <PageHeader title="Dictionary" context="Browse the Indian Sign Language vocabulary" />
+    <>
+      <div className="animate-fade-up">
+        <PageHeader title="Dictionary" context="Browse the Indian Sign Language vocabulary" />
 
       <div className="mb-8">
         <Link
@@ -81,6 +82,7 @@ export default function DictionaryPage() {
           </p>
         </div>
       )}
+      </div>
 
       {/* Dictionary Modal */}
       {selectedWord && (
@@ -114,6 +116,6 @@ export default function DictionaryPage() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
