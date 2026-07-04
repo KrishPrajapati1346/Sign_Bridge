@@ -123,6 +123,7 @@ function LocalDrawOverlay({ videoRef, broadcast, enabled }: { videoRef: React.Re
       let lastY = 0;
       let smoothX = 0;
       let smoothY = 0;
+      let lastActivityTime = Date.now();
 
       const loop = () => {
         if (!active) {
@@ -165,6 +166,7 @@ function LocalDrawOverlay({ videoRef, broadcast, enabled }: { videoRef: React.Re
             const y = smoothY * canvas.height;
 
             if (isPointing) { 
+              lastActivityTime = Date.now();
               if (!isDrawing) {
                 isDrawing = true;
                 lastX = x;
@@ -190,6 +192,12 @@ function LocalDrawOverlay({ videoRef, broadcast, enabled }: { videoRef: React.Re
           } else if (isDrawing) {
             isDrawing = false;
             broadcast({ kind: 'draw', type: 'end', x: 0, y: 0 });
+          }
+
+          if (!isDrawing && Date.now() - lastActivityTime > 2500) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            broadcast({ kind: 'draw', type: 'clear' });
+            lastActivityTime = Date.now();
           }
         }
         requestAnimationFrame(loop);
