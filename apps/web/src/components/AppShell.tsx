@@ -13,70 +13,80 @@ import { CallRinger } from './CallRinger';
 /** The authenticated application shell: sidebar on desktop, top bar + drawer on mobile. */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [drawerOpen, setDrawerOpen] = useState(false);
   const t = useT();
 
   return (
-    <div className="min-h-screen lg:pl-64">
+    <div className="min-h-screen pb-16 lg:pb-0 lg:pl-64">
       <CallRinger />
-      <header className="glass sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 lg:fixed lg:inset-y-0 lg:left-0 lg:h-screen lg:w-64 lg:flex-col lg:items-stretch lg:justify-start lg:border-b-0 lg:border-r lg:px-0 lg:py-6">
-        <div className="flex items-center lg:px-6">
+      
+      {/* Mobile Top Header */}
+      <header className="glass sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4 lg:hidden">
+        <Wordmark />
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <UserChipMobile />
+        </div>
+      </header>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:flex lg:w-64 lg:flex-col lg:border-r lg:bg-canvas lg:py-6">
+        <div className="flex items-center px-6">
           <Wordmark />
         </div>
-
-        {/* Desktop primary nav */}
         <nav
           aria-label="Primary"
-          className="hidden lg:mt-8 lg:flex lg:flex-1 lg:flex-col lg:gap-1 lg:overflow-y-auto lg:overscroll-contain lg:px-3"
+          className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-3"
         >
           <NavLinks pathname={pathname} />
         </nav>
-
-        {/* Desktop user chip */}
-        <div className="hidden lg:block lg:border-t lg:border-line lg:px-3 lg:pt-4">
+        <div className="border-t border-line px-3 pt-4">
           <UserChip />
         </div>
+      </aside>
 
-        {/* Mobile menu toggle */}
-        <button
-          type="button"
-          onClick={() => setDrawerOpen(true)}
-          aria-expanded={drawerOpen}
-          aria-label={t('common.openMenu')}
-          className="flex h-11 w-11 items-center justify-center rounded-lg text-ink transition hover:bg-canvas lg:hidden"
-        >
-          <Menu aria-hidden="true" className="h-6 w-6" />
-        </button>
-      </header>
-
-      <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={t('common.nav')}>
-        <div className="flex items-center justify-between border-b border-line px-4 py-3">
-          <Wordmark />
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(false)}
-            aria-label={t('common.closeMenu')}
-            className="flex h-11 w-11 items-center justify-center rounded-lg text-ink hover:bg-canvas"
-          >
-            <X aria-hidden="true" className="h-6 w-6" />
-          </button>
-        </div>
-        <nav aria-label="Primary" className="flex flex-1 flex-col gap-1 px-3 py-4">
-          <NavLinks pathname={pathname} onNavigate={() => setDrawerOpen(false)} />
-        </nav>
-        <div className="border-t border-line px-3 py-4">
-          <UserChip />
-        </div>
-      </NavDrawer>
-
-      <main id="main" className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-10 lg:py-12">
+      <main id="main" className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-10 lg:py-12">
         {children}
       </main>
 
       <footer className="mx-auto w-full max-w-5xl px-4 pb-10 text-sm text-muted sm:px-6 lg:px-10">
         <p>{t('common.tagline')}</p>
       </footer>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav pathname={pathname} />
     </div>
+  );
+}
+
+function MobileBottomNav({ pathname }: { pathname: string }) {
+  const t = useT();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
+
+  // For bottom nav, we might only want to show the primary 4-5 items to avoid crowding.
+  // We'll show Dashboard, Call, Translate, Learn.
+  const bottomNavItems = NAV_ITEMS.filter(
+    (item) => !item.adminOnly && ['/dashboard', '/call', '/translate', '/learn'].includes(item.href)
+  );
+
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-40 flex h-16 items-center justify-around border-t border-line bg-canvas/90 backdrop-blur-md pb-safe lg:hidden">
+      {bottomNavItems.map(({ href, label, labelKey, icon: Icon }) => {
+        const active = pathname === href || pathname.startsWith(`${href}/`);
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={`flex flex-col items-center justify-center w-full h-full gap-1 transition ${
+              active ? 'text-signalInk' : 'text-muted hover:text-ink'
+            }`}
+          >
+            <Icon className="h-5 w-5" />
+            <span className="text-[10px] font-medium">{t(labelKey) || label}</span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -90,7 +100,6 @@ function Wordmark() {
         aria-hidden="true"
         className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-aurora text-white shadow-glow transition group-hover:scale-105"
       >
-        {/* Two-channel "bridge" motif */}
         <svg
           viewBox="0 0 24 24"
           className="h-4 w-4"
@@ -147,6 +156,26 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
 
 import { useTheme } from 'next-themes';
 
+function UserChipMobile() {
+  const { logout } = useAuth();
+  const router = useRouter();
+
+  async function handleLogout() {
+    await logout();
+    router.replace('/login');
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleLogout}
+      className="flex h-10 w-10 items-center justify-center rounded-lg text-ink hover:bg-canvas"
+    >
+      <LogOut aria-hidden="true" className="h-4 w-4" />
+    </button>
+  );
+}
+
 function UserChip() {
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -185,12 +214,12 @@ function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => setMounted(true), []);
-  if (!mounted) return <div className="h-11 w-11" />;
+  if (!mounted) return <div className="h-10 w-10" />;
 
   return (
     <button
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-      className="flex h-11 w-11 items-center justify-center rounded-lg text-ink hover:bg-canvas"
+      className="flex h-10 w-10 items-center justify-center rounded-lg text-ink hover:bg-canvas"
       aria-label="Toggle theme"
     >
       {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}

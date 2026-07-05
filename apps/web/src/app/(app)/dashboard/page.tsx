@@ -98,7 +98,7 @@ function StartConversationHero() {
   return (
     <section
       aria-labelledby="hero-heading"
-      className="relative overflow-hidden rounded-3xl border border-line bg-ink px-6 py-12 text-canvas shadow-lift sm:px-10"
+      className="relative overflow-hidden rounded-3xl border border-line bg-ink px-5 py-8 sm:px-10 sm:py-12 text-canvas shadow-lift"
     >
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-hero-mesh" />
       <BridgeMotif />

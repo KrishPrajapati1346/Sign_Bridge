@@ -82,7 +82,7 @@ export default function LivePage() {
 
       <SessionControls live={live} />
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+      <div className="mt-6 grid gap-6 md:grid-cols-2">
         <SignZone live={live} videoRef={videoRef} canvasRef={canvasRef} />
         <SpeechZone live={live} speakingLang={speakingLang} setSpeakingLang={setSpeakingLang} />
       </div>

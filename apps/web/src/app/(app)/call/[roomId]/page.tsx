@@ -462,9 +462,9 @@ export default function CallRoomPage({
   const remotePeerIds = Object.keys(call.remoteStreams);
   const gridCols =
     remotePeerIds.length > 4
-      ? 'grid-cols-3'
+      ? 'grid-cols-1 sm:grid-cols-3'
       : remotePeerIds.length > 1
-        ? 'grid-cols-2'
+        ? 'grid-cols-1 sm:grid-cols-2'
         : 'grid-cols-1';
 
   return (
@@ -524,7 +524,7 @@ export default function CallRoomPage({
           dragConstraints={containerRef}
           dragElastic={0.1}
           dragMomentum={false}
-          className="absolute bottom-4 right-4 h-28 w-40 rounded-xl border border-canvas/40 object-cover shadow-lift sm:h-32 sm:w-48 overflow-hidden z-20 transition-transform cursor-grab active:cursor-grabbing"
+          className="absolute bottom-4 right-4 h-24 w-32 rounded-xl border border-canvas/40 object-cover shadow-lift sm:h-32 sm:w-48 overflow-hidden z-20 transition-transform cursor-grab active:cursor-grabbing"
         >
           <div className={`absolute inset-0 w-full h-full pointer-events-none ${call.screenEnabled ? '' : '-scale-x-100'}`}>
             <video
@@ -562,7 +562,7 @@ export default function CallRoomPage({
       </div>
 
       {/* Controls bar. */}
-      <div className="mt-4 flex flex-wrap items-center gap-3">
+      <div className="mt-4 flex items-center gap-3 overflow-x-auto sm:flex-wrap sm:overflow-visible pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <ControlButton
           onClick={call.toggleMic}
           pressed={!call.micEnabled}
