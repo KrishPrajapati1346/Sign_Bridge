@@ -56,6 +56,10 @@ export function loginRequest(payload: LoginPayload): Promise<AuthResult> {
   return postJson<AuthResult>('/api/auth/login', payload);
 }
 
+export function loginWithGoogleRequest(credential: string): Promise<AuthResult> {
+  return postJson<AuthResult>('/api/auth/google', { credential });
+}
+
 /** Silent refresh — relies on the httpOnly sb_refresh cookie. */
 export function refreshRequest(): Promise<{ accessToken: string }> {
   return postJson<{ accessToken: string }>('/api/auth/refresh');

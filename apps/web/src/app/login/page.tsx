@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { AuthApiError } from '@/lib/auth-api';
+import { GoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -77,6 +78,35 @@ export default function LoginPage() {
               {formError}
             </p>
           )}
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                if (credentialResponse.credential) {
+                  try {
+                    await loginWithGoogle(credentialResponse.credential);
+                    router.replace('/dashboard');
+                  } catch (err) {
+                    setFormError(
+                      err instanceof AuthApiError ? err.message : 'Google login failed.',
+                    );
+                  }
+                }
+              }}
+              onError={() => {
+                setFormError('Google login failed.');
+              }}
+            />
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-line" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-surface px-2 text-muted">Or continue with</span>
+            </div>
+          </div>
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium">

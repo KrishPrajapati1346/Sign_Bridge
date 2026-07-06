@@ -13,6 +13,7 @@ import type { AuthUser } from '@signbridge/shared-types';
 import {
   API_URL,
   loginRequest,
+  loginWithGoogleRequest,
   logoutRequest,
   meRequest,
   refreshRequest,
@@ -27,6 +28,7 @@ interface AuthContextValue {
   /** True while the initial silent-refresh attempt is in flight. */
   isLoading: boolean;
   login: (payload: LoginPayload) => Promise<void>;
+  loginWithGoogle: (credential: string) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
   /** fetch wrapper that attaches the Bearer token and retries once on 401. */
@@ -51,6 +53,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(
     async (payload: LoginPayload) => {
       const result = await loginRequest(payload);
+      setUser(result.user);
+      setToken(result.accessToken);
+    },
+    [setToken],
+  );
+
+  const loginWithGoogle = useCallback(
+    async (credential: string) => {
+      const result = await loginWithGoogleRequest(credential);
       setUser(result.user);
       setToken(result.accessToken);
     },
@@ -126,8 +137,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [setToken]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, accessToken, isLoading, login, register, logout, authFetch }),
-    [user, accessToken, isLoading, login, register, logout, authFetch],
+    () => ({ user, accessToken, isLoading, login, loginWithGoogle, register, logout, authFetch }),
+    [user, accessToken, isLoading, login, loginWithGoogle, register, logout, authFetch],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -115,6 +115,9 @@ usersRouter.patch(
     const userId = req.user!.id;
     const user = await requireUser(userId);
 
+    if (!user.passwordHash) {
+      throw new HttpError(400, 'INVALID_PASSWORD', 'This account uses Google Sign-In. You cannot change your password here.');
+    }
     const valid = await verifyPassword(req.body.currentPassword, user.passwordHash);
     if (!valid) {
       throw new HttpError(400, 'INVALID_PASSWORD', 'Your current password is incorrect.');

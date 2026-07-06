@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { SELECTABLE_ROLES, type UserRole } from '@signbridge/shared-types';
 import { useAuth } from '@/lib/auth-context';
 import { AuthApiError } from '@/lib/auth-api';
+import { GoogleLogin } from '@react-oauth/google';
 
 const ROLE_LABELS: Record<UserRole, string> = {
   DEAF_USER: 'Deaf user',
@@ -15,7 +16,7 @@ const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 export default function RegisterPage() {
-  const { register } = useAuth();
+  const { register, loginWithGoogle } = useAuth();
   const router = useRouter();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -95,6 +96,36 @@ export default function RegisterPage() {
               {formError}
             </p>
           )}
+
+          <div className="flex justify-center">
+            <GoogleLogin
+              onSuccess={async (credentialResponse) => {
+                if (credentialResponse.credential) {
+                  try {
+                    await loginWithGoogle(credentialResponse.credential);
+                    localStorage.setItem('signbridge_needs_tour', 'true');
+                    router.replace('/dashboard');
+                  } catch (err) {
+                    setFormError(
+                      err instanceof AuthApiError ? err.message : 'Google sign-up failed.',
+                    );
+                  }
+                }
+              }}
+              onError={() => {
+                setFormError('Google sign-up failed.');
+              }}
+            />
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-line" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-surface px-2 text-muted">Or continue with email</span>
+            </div>
+          </div>
 
           <div>
             <label htmlFor="name" className="block text-sm font-medium">

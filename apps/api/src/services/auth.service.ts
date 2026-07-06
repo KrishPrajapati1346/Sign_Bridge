@@ -6,8 +6,52 @@ import { hashPassword, verifyPassword } from '../lib/password.js';
 import { generateRefreshToken, hashToken, signAccessToken } from '../lib/jwt.js';
 import { HttpError } from '../middleware/error.js';
 import type { RegisterInput, LoginInput } from '../validation/auth.schema.js';
+import { OAuth2Client } from 'google-auth-library';
 
+const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
 
+export async function loginWithGoogle(credential: string): Promise<AuthTokens> {
+  if (!env.GOOGLE_CLIENT_ID) {
+    throw new HttpError(500, 'GOOGLE_AUTH_DISABLED', 'Google login is not configured on the server.');
+  }
+
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: env.GOOGLE_CLIENT_ID,
+    });
+    
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email) {
+      throw new Error('No email in payload');
+    }
+
+    const { email, name, sub: googleId } = payload;
+    let user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          email,
+          name: name || null,
+          googleId,
+          role: 'HEARING_USER',
+        },
+      });
+    } else if (!user.googleId) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { googleId },
+      });
+    }
+
+    const accessToken = signAccessToken({ sub: user.id, role: user.role });
+    const refreshToken = await issueRefreshToken(user.id);
+    return { user: toAuthUser(user), accessToken, refreshToken };
+  } catch (err) {
+    throw new HttpError(401, 'INVALID_GOOGLE_TOKEN', 'Google authentication failed.');
+  }
+}
 
 /** What every auth flow produces: a safe user view plus fresh tokens. */
 export interface AuthTokens {
@@ -59,7 +103,7 @@ export async function register(input: RegisterInput): Promise<AuthTokens> {
 export async function login(input: LoginInput): Promise<AuthTokens> {
   const user = await prisma.user.findUnique({ where: { email: input.email } });
   // Always run a comparison-shaped error path to avoid leaking which half failed.
-  if (!user || !(await verifyPassword(input.password, user.passwordHash))) {
+  if (!user || !user.passwordHash || !(await verifyPassword(input.password, user.passwordHash))) {
     throw new HttpError(401, 'INVALID_CREDENTIALS', 'Invalid email or password.');
   }
 

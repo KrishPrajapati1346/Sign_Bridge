@@ -39,7 +39,10 @@ export const metadata: Metadata = {
 import { ThemeProvider } from '@/components/theme-provider';
 import { SocketProvider } from '@/lib/socket-context';
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? 'placeholder';
   return (
     <html
       lang="en"
@@ -53,11 +56,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           Skip to content
         </a>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>
-            <SocketProvider>{children}</SocketProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <GoogleOAuthProvider clientId={clientId}>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <AuthProvider>
+              <SocketProvider>{children}</SocketProvider>
+            </AuthProvider>
+          </ThemeProvider>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

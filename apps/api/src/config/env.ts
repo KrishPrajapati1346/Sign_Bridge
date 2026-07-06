@@ -10,6 +10,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(4000),
   CORS_ORIGIN: z.string().default('http://localhost:3000'),
   DATABASE_URL: z.string().url(),
+  GOOGLE_CLIENT_ID: z.string().optional(),
   // Auth secrets are optional here so the schema can supply development-only
   // fallbacks below; they are enforced as required in production.
   JWT_ACCESS_SECRET: z.string().min(1).optional(),

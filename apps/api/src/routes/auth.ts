@@ -9,10 +9,12 @@ import { HttpError } from '../middleware/error.js';
 import { loginSchema, registerSchema } from '../validation/auth.schema.js';
 import {
   login,
+  loginWithGoogle,
   register,
   revokeRefreshToken,
   rotateRefreshToken,
 } from '../services/auth.service.js';
+import { z } from 'zod';
 
 const REFRESH_COOKIE = 'sb_refresh';
 
@@ -59,7 +61,15 @@ authRouter.post(
   }),
 );
 
-
+authRouter.post(
+  '/google',
+  validateBody(z.object({ credential: z.string() })),
+  asyncHandler(async (req: Request, res: Response<ApiResponse<AuthResult>>) => {
+    const { user, accessToken, refreshToken } = await loginWithGoogle(req.body.credential);
+    setRefreshCookie(res, refreshToken);
+    res.json({ success: true, data: { user, accessToken } });
+  }),
+);
 
 authRouter.post(
   '/refresh',
