@@ -35,10 +35,11 @@ export function fetchSettings(authFetch: AuthFetch): Promise<{ settings: UserSet
 export function updateProfile(
   authFetch: AuthFetch,
   name: string,
+  role?: 'HEARING_USER' | 'DEAF_USER',
 ): Promise<{ profile: UserProfile }> {
   return requestJson<{ profile: UserProfile }>(authFetch, '/api/users/me', {
     method: 'PATCH',
-    body: JSON.stringify({ name }),
+    body: JSON.stringify({ name, ...(role ? { role } : {}) }),
   });
 }
 

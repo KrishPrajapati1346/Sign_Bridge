@@ -33,6 +33,8 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   /** fetch wrapper that attaches the Bearer token and retries once on 401. */
   authFetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+  /** Update the current user in state */
+  updateUser: (user: AuthUser) => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -137,8 +139,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [setToken]);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, accessToken, isLoading, login, loginWithGoogle, register, logout, authFetch }),
-    [user, accessToken, isLoading, login, loginWithGoogle, register, logout, authFetch],
+    () => ({ user, accessToken, isLoading, login, loginWithGoogle, register, logout, authFetch, updateUser: setUser }),
+    [user, accessToken, isLoading, login, loginWithGoogle, register, logout, authFetch, setUser],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

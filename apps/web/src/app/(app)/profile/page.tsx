@@ -8,7 +8,7 @@ import { changePassword, updateProfile } from '@/lib/users-api';
 import { PageHeader } from '@/components/PageHeader';
 
 export default function ProfilePage() {
-  const { user, authFetch } = useAuth();
+  const { user, authFetch, updateUser } = useAuth();
   const t = useT();
 
   return (
@@ -18,9 +18,11 @@ export default function ProfilePage() {
       <div className="space-y-8">
         <AccountSection
           email={user?.email ?? ''}
-          role={user ? t(`role.${user.role}`) : ''}
+          initialRole={user?.role ?? 'HEARING_USER'}
           initialName={user?.name ?? ''}
           authFetch={authFetch}
+          updateUser={updateUser}
+          user={user!}
         />
         <PasswordSection authFetch={authFetch} />
       </div>
@@ -39,17 +41,22 @@ const inputClass =
 
 function AccountSection({
   email,
-  role,
+  initialRole,
   initialName,
   authFetch,
+  updateUser,
+  user,
 }: {
   email: string;
-  role: string;
+  initialRole: string;
   initialName: string;
   authFetch: AuthFetch;
+  updateUser: (u: any) => void;
+  user: any;
 }) {
   const t = useT();
   const [name, setName] = useState(initialName);
+  const [role, setRole] = useState(initialRole as 'HEARING_USER' | 'DEAF_USER');
   const [status, setStatus] = useState<'idle' | 'saving'>('idle');
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,8 +67,10 @@ function AccountSection({
     setSuccess(false);
     setError(null);
     try {
-      const { profile } = await updateProfile(authFetch, name.trim());
+      const { profile } = await updateProfile(authFetch, name.trim(), role);
       setName(profile.name ?? '');
+      setRole(profile.role);
+      updateUser({ ...user, name: profile.name, role: profile.role });
       setSuccess(true);
     } catch (err) {
       setError(err instanceof AuthApiError ? err.message : t('profile.saveError'));
@@ -79,33 +88,49 @@ function AccountSection({
           <dt className="text-sm font-medium text-muted">{t('profile.email')}</dt>
           <dd className="mt-1 text-ink">{email}</dd>
         </div>
-        <div>
-          <dt className="text-sm font-medium text-muted">{t('profile.role')}</dt>
-          <dd className="mt-1">
-            <span className="chip">{role}</span>
-          </dd>
-        </div>
       </dl>
 
-      <form onSubmit={handleSubmit} className="mt-6 max-w-sm" noValidate>
-        <label htmlFor="name" className="block text-sm font-medium text-ink">
-          {t('profile.name')}
-        </label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            setSuccess(false);
-          }}
-          maxLength={80}
-          required
-          aria-describedby={error ? 'name-error' : success ? 'name-success' : undefined}
-          aria-invalid={error ? true : undefined}
-          className={inputClass}
-        />
+      <form onSubmit={handleSubmit} className="mt-6 max-w-sm space-y-4" noValidate>
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-ink">
+            {t('profile.name')}
+          </label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            value={name}
+            onChange={(e) => {
+              setName(e.target.value);
+              setSuccess(false);
+            }}
+            maxLength={80}
+            required
+            aria-describedby={error ? 'name-error' : success ? 'name-success' : undefined}
+            aria-invalid={error ? true : undefined}
+            className={inputClass}
+          />
+        </div>
+
+        <div>
+          <label htmlFor="role" className="block text-sm font-medium text-ink">
+            {t('profile.role')}
+          </label>
+          <select
+            id="role"
+            name="role"
+            value={role}
+            onChange={(e) => {
+              setRole(e.target.value as 'HEARING_USER' | 'DEAF_USER');
+              setSuccess(false);
+            }}
+            className={inputClass}
+          >
+            <option value="HEARING_USER">{t('role.HEARING_USER')}</option>
+            <option value="DEAF_USER">{t('role.DEAF_USER')}</option>
+          </select>
+        </div>
+
         {error && (
           <p id="name-error" role="alert" className="mt-1 text-sm text-beacon">
             {error}

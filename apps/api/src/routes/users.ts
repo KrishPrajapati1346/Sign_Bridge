@@ -79,7 +79,10 @@ usersRouter.patch(
   asyncHandler(async (req: Request, res: Response<ApiResponse<{ profile: UserProfile }>>) => {
     const user = await prisma.user.update({
       where: { id: req.user!.id },
-      data: { name: req.body.name },
+      data: { 
+        name: req.body.name,
+        ...(req.body.role ? { role: req.body.role } : {})
+      },
     });
     res.json({ success: true, data: { profile: toProfile(user) } });
   }),
