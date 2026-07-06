@@ -15,43 +15,44 @@ export async function loginWithGoogle(credential: string): Promise<AuthTokens> {
     throw new HttpError(500, 'GOOGLE_AUTH_DISABLED', 'Google login is not configured on the server.');
   }
 
+  let payload;
   try {
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: env.GOOGLE_CLIENT_ID,
     });
-    
-    const payload = ticket.getPayload();
-    if (!payload || !payload.email) {
-      throw new Error('No email in payload');
-    }
-
-    const { email, name, sub: googleId } = payload;
-    let user = await prisma.user.findUnique({ where: { email } });
-
-    if (!user) {
-      user = await prisma.user.create({
-        data: {
-          email,
-          name: name || null,
-          googleId,
-          role: 'HEARING_USER',
-        },
-      });
-    } else if (!user.googleId) {
-      user = await prisma.user.update({
-        where: { id: user.id },
-        data: { googleId },
-      });
-    }
-
-    const accessToken = signAccessToken({ sub: user.id, role: user.role });
-    const refreshToken = await issueRefreshToken(user.id);
-    return { user: toAuthUser(user), accessToken, refreshToken };
+    payload = ticket.getPayload();
   } catch (err) {
-    console.error('Google Auth Error:', err);
+    console.error('Google Auth Verify Error:', err);
     throw new HttpError(401, 'INVALID_GOOGLE_TOKEN', 'Google authentication failed.');
   }
+
+  if (!payload || !payload.email) {
+    throw new HttpError(400, 'INVALID_GOOGLE_TOKEN', 'No email in Google payload');
+  }
+
+  const { email, name, sub: googleId } = payload;
+  let user = await prisma.user.findUnique({ where: { email } });
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: {
+        email,
+        name: name || null,
+        googleId,
+        role: 'HEARING_USER',
+      },
+    });
+  } else if (!user.googleId) {
+    user = await prisma.user.update({
+      where: { id: user.id },
+      data: { googleId },
+    });
+  }
+
+  const accessToken = signAccessToken({ sub: user.id, role: user.role });
+  const refreshToken = await issueRefreshToken(user.id);
+  return { user: toAuthUser(user), accessToken, refreshToken };
 }
 
 /** What every auth flow produces: a safe user view plus fresh tokens. */
