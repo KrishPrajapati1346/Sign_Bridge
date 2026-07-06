@@ -3,16 +3,18 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Menu, X, LogOut, Sun, Moon } from 'lucide-react';
+import { Menu, X, LogOut, Sun, Moon, User as UserIcon, Settings } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { useT } from '@/lib/i18n/use-translation';
 import { NAV_ITEMS } from '@/lib/nav';
 import { NavDrawer } from './NavDrawer';
 import { CallRinger } from './CallRinger';
+import { useTheme } from 'next-themes';
 
-/** The authenticated application shell: sidebar on desktop, top bar + drawer on mobile. */
+/** The authenticated application shell: sidebar on desktop, top bar + bottom nav + drawer on mobile. */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const t = useT();
 
   return (
@@ -24,7 +26,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <Wordmark />
         <div className="flex items-center gap-1">
           <ThemeToggle />
-          <UserChipMobile />
+          <Link href="/profile" className="flex h-10 w-10 items-center justify-center rounded-lg text-ink hover:bg-canvas">
+            <UserIcon aria-hidden="true" className="h-5 w-5" />
+          </Link>
+          <Link href="/settings" className="flex h-10 w-10 items-center justify-center rounded-lg text-ink hover:bg-canvas">
+            <Settings aria-hidden="true" className="h-5 w-5" />
+          </Link>
         </div>
       </header>
 
@@ -44,6 +51,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
+      {/* Mobile Sidebar (Drawer) */}
+      <NavDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title={t('common.nav') || 'Navigation'}>
+        <div className="flex items-center justify-between border-b border-line px-4 py-3">
+          <Wordmark />
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(false)}
+            aria-label={t('common.closeMenu') || 'Close menu'}
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-ink hover:bg-canvas"
+          >
+            <X aria-hidden="true" className="h-6 w-6" />
+          </button>
+        </div>
+        <nav aria-label="Primary" className="flex flex-1 flex-col gap-1 px-3 py-4">
+          <NavLinks pathname={pathname} onNavigate={() => setDrawerOpen(false)} />
+        </nav>
+        <div className="border-t border-line px-3 py-4">
+          <UserChip />
+        </div>
+      </NavDrawer>
+
       <main id="main" className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 lg:px-10 lg:py-12">
         {children}
       </main>
@@ -53,18 +81,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </footer>
 
       {/* Mobile Bottom Navigation */}
-      <MobileBottomNav pathname={pathname} />
+      <MobileBottomNav pathname={pathname} onMoreClick={() => setDrawerOpen(true)} />
     </div>
   );
 }
 
-function MobileBottomNav({ pathname }: { pathname: string }) {
+function MobileBottomNav({ pathname, onMoreClick }: { pathname: string, onMoreClick: () => void }) {
   const t = useT();
   const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
 
-  // For bottom nav, we might only want to show the primary 4-5 items to avoid crowding.
-  // We'll show Dashboard, Call, Translate, Learn.
+  // For bottom nav, we might only want to show the primary 4 items to avoid crowding.
   const bottomNavItems = NAV_ITEMS.filter(
     (item) => !item.adminOnly && ['/dashboard', '/call', '/translate', '/learn'].includes(item.href)
   );
@@ -86,6 +113,15 @@ function MobileBottomNav({ pathname }: { pathname: string }) {
           </Link>
         );
       })}
+      
+      {/* "More" Button */}
+      <button
+        onClick={onMoreClick}
+        className="flex flex-col items-center justify-center w-full h-full gap-1 text-muted hover:text-ink transition"
+      >
+        <Menu className="h-5 w-5" />
+        <span className="text-[10px] font-medium">More</span>
+      </button>
     </nav>
   );
 }
@@ -154,52 +190,32 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
   );
 }
 
-import { useTheme } from 'next-themes';
-
-function UserChipMobile() {
-  const { logout } = useAuth();
-  const router = useRouter();
-
-  async function handleLogout() {
-    await logout();
-    router.replace('/login');
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={handleLogout}
-      className="flex h-10 w-10 items-center justify-center rounded-lg text-ink hover:bg-canvas"
-    >
-      <LogOut aria-hidden="true" className="h-4 w-4" />
-    </button>
-  );
-}
-
 function UserChip() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const t = useT();
 
   async function handleLogout() {
-    await logout();
-    router.replace('/login');
+    if (window.confirm("Are you sure you want to log out?")) {
+      await logout();
+      router.replace('/login');
+    }
   }
 
   return (
     <div className="flex items-center justify-between gap-2">
       <div className="min-w-0">
         <p className="truncate text-sm font-medium text-ink">
-          {user?.name ?? user?.email ?? t('common.signedIn')}
+          {user?.name ?? user?.email ?? t('common.signedIn') ?? 'Signed in'}
         </p>
-        <p className="truncate text-xs text-muted">{user ? t(`role.${user.role}`) : ''}</p>
+        <p className="truncate text-xs text-muted">{user ? (t(`role.${user.role}`) || user.role) : ''}</p>
       </div>
       <div className="flex items-center">
         <ThemeToggle />
         <button
           type="button"
           onClick={handleLogout}
-          aria-label={t('common.logout')}
+          aria-label={t('common.logout') || 'Log out'}
           className="flex h-11 w-11 items-center justify-center rounded-lg text-ink hover:bg-canvas"
         >
           <LogOut aria-hidden="true" className="h-4 w-4" />

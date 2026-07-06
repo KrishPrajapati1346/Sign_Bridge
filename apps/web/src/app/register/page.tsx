@@ -98,13 +98,14 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="name" className="block text-sm font-medium">
-              Name <span className="text-ink/50">(optional)</span>
+              Name
             </label>
             <input
               id="name"
               name="name"
               type="text"
               autoComplete="name"
+              required
               value={name}
               onChange={(e) => setName(e.target.value)}
               aria-describedby={fieldError('name') ? 'name-error' : undefined}
