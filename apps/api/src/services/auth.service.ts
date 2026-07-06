@@ -49,6 +49,7 @@ export async function loginWithGoogle(credential: string): Promise<AuthTokens> {
     const refreshToken = await issueRefreshToken(user.id);
     return { user: toAuthUser(user), accessToken, refreshToken };
   } catch (err) {
+    console.error('Google Auth Error:', err);
     throw new HttpError(401, 'INVALID_GOOGLE_TOKEN', 'Google authentication failed.');
   }
 }
