@@ -11,4 +11,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping API Health Endpoint
-        run: curl -sSf ${{ secrets.RENDER_API_URL }}/api/health > /dev/null || exit 1
+        run: curl -sSf --retry 3 --retry-delay 10 --retry-connrefused https://sign-bridge-o70r.onrender.com/api/health > /dev/null || exit 1
