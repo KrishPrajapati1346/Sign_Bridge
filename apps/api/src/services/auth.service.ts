@@ -6,16 +6,15 @@ import { hashPassword, verifyPassword } from '../lib/password.js';
 import { generateRefreshToken, hashToken, signAccessToken } from '../lib/jwt.js';
 import { HttpError } from '../middleware/error.js';
 import type { RegisterInput, LoginInput } from '../validation/auth.schema.js';
-import { OAuth2Client } from 'google-auth-library';
 
-const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
+// import { OAuth2Client } from 'google-auth-library'; // no longer needed
 
 export async function loginWithGoogle(credential: string): Promise<AuthTokens> {
   if (!env.GOOGLE_CLIENT_ID) {
     throw new HttpError(500, 'GOOGLE_AUTH_DISABLED', 'Google login is not configured on the server.');
   }
 
-  let payload;
+  let payload: Record<string, any>;
   try {
     const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { Authorization: `Bearer ${credential}` }
