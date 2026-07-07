@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { SELECTABLE_ROLES, type UserRole } from '@signbridge/shared-types';
 import { useAuth } from '@/lib/auth-context';
 import { AuthApiError } from '@/lib/auth-api';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleAuthButton } from '@/components/GoogleAuthButton';
 
 const ROLE_LABELS: Record<UserRole, string> = {
   DEAF_USER: 'Deaf user',
@@ -98,23 +98,16 @@ export default function RegisterPage() {
           )}
 
           <div className="flex justify-center">
-            <GoogleLogin
-              theme="outline"
-              shape="pill"
-              size="large"
-              width="336"
-              text="continue_with"
-              onSuccess={async (credentialResponse) => {
-                if (credentialResponse.credential) {
-                  try {
-                    await loginWithGoogle(credentialResponse.credential);
-                    localStorage.setItem('signbridge_needs_tour', 'true');
-                    router.replace('/dashboard');
-                  } catch (err) {
-                    setFormError(
-                      err instanceof AuthApiError ? err.message : 'Google sign-up failed.',
-                    );
-                  }
+            <GoogleAuthButton
+              onSuccess={async (token) => {
+                try {
+                  await loginWithGoogle(token);
+                  localStorage.setItem('signbridge_needs_tour', 'true');
+                  router.replace('/dashboard');
+                } catch (err) {
+                  setFormError(
+                    err instanceof AuthApiError ? err.message : 'Google sign-up failed.',
+                  );
                 }
               }}
               onError={() => {

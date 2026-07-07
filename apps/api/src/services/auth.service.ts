@@ -17,11 +17,13 @@ export async function loginWithGoogle(credential: string): Promise<AuthTokens> {
 
   let payload;
   try {
-    const ticket = await googleClient.verifyIdToken({
-      idToken: credential,
-      audience: env.GOOGLE_CLIENT_ID,
+    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: `Bearer ${credential}` }
     });
-    payload = ticket.getPayload();
+    if (!res.ok) {
+      throw new Error(`Google API returned ${res.status}`);
+    }
+    payload = await res.json();
   } catch (err) {
     console.error('Google Auth Verify Error:', err);
     throw new HttpError(401, 'INVALID_GOOGLE_TOKEN', 'Google authentication failed.');

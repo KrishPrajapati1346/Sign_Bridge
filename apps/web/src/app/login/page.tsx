@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { AuthApiError } from '@/lib/auth-api';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleAuthButton } from '@/components/GoogleAuthButton';
 
 export default function LoginPage() {
   const { login, loginWithGoogle } = useAuth();
@@ -80,22 +80,15 @@ export default function LoginPage() {
           )}
 
           <div className="flex justify-center">
-            <GoogleLogin
-              theme="outline"
-              shape="pill"
-              size="large"
-              width="336"
-              text="continue_with"
-              onSuccess={async (credentialResponse) => {
-                if (credentialResponse.credential) {
-                  try {
-                    await loginWithGoogle(credentialResponse.credential);
-                    router.replace('/dashboard');
-                  } catch (err) {
-                    setFormError(
-                      err instanceof AuthApiError ? err.message : 'Google login failed.',
-                    );
-                  }
+            <GoogleAuthButton
+              onSuccess={async (token) => {
+                try {
+                  await loginWithGoogle(token);
+                  router.replace('/dashboard');
+                } catch (err) {
+                  setFormError(
+                    err instanceof AuthApiError ? err.message : 'Google login failed.',
+                  );
                 }
               }}
               onError={() => {
