@@ -81,6 +81,11 @@ export default function LoginPage() {
 
           <div className="flex justify-center">
             <GoogleLogin
+              theme="outline"
+              shape="pill"
+              size="large"
+              width="336"
+              text="continue_with"
               onSuccess={async (credentialResponse) => {
                 if (credentialResponse.credential) {
                   try {
