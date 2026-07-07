@@ -36,11 +36,11 @@ The interface itself speaks **English, Hindi, and Gujarati** — switching the l
 
 ## Team
 
-| | Name | Role | Contribution |
-|---|---|---|---|
-| 🅺 | **Krish Prajapati** | Full-Stack Web Development | Built and owns the Next.js web app and the Express + Prisma API — auth, conversations, calls, translate, emergency, learning — plus Socket.IO signalling for video calls and the overall monorepo setup. |
-| 🅿 | **Prakrati Jain** | Initial Features | Built out the first pass of the web app's feature set, working directly from the modules described in the project's original README — getting the early screens and flows in place before the rest of the team built on top of them. |
-| 🆅 | **Vedant Bhatt** | AI / ML | Owns the sign-recognition pipeline — MediaPipe hand tracking, the shared landmark feature extractor, and training/exporting the classifier the browser loads via TensorFlow.js. |
+|     | Name                | Role                   | Contribution                                                                                                                                                                                                              |
+| --- | ------------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🅺   | **Krish Prajapati** | Full-Stack Development | Led the development of the Next.js web application, Express + Prisma backend, Socket.IO signalling, and overall system integration, extending and refining the platform into its production-ready architecture.           |
+| 🅿  | **Prakrati Jain**   | Full-Stack Development | Contributed to the initial development of both the frontend and backend, implementing core application features, user interfaces, APIs, and application workflows that established the foundation for the final platform. |
+| 🆅   | **Vedant Bhatt**    | AI / ML Development    | Developed and integrated the sign language recognition pipeline, implementing MediaPipe-based hand tracking, landmark feature extraction, model training, and TensorFlow.js inference for real-time gesture recognition.  |
 
 ---
 
@@ -121,18 +121,18 @@ Vedant's training pipeline builds the ISL classifier from either self-collected 
 
 ## Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | Next.js 14, React 18, TypeScript, Tailwind CSS |
-| In-browser ML | MediaPipe Tasks Vision, TensorFlow.js |
-| 3D avatar | Three.js, react-three-fiber, drei |
-| Backend | Node.js, Express, TypeScript, Zod |
-| Realtime | Socket.IO, WebRTC |
-| Auth | JWT (access + refresh), bcrypt |
-| Database | PostgreSQL 16, Prisma |
-| ML service | Python 3.11, FastAPI, TensorFlow |
-| Monorepo | pnpm workspaces, Turborepo |
-| Tooling | Docker Compose, GitHub Actions, ESLint, Prettier, Vitest, pytest |
+| Layer         | Technology                                                       |
+| ------------- | ---------------------------------------------------------------- |
+| Frontend      | Next.js 14, React 18, TypeScript, Tailwind CSS                   |
+| In-browser ML | MediaPipe Tasks Vision, TensorFlow.js                            |
+| 3D avatar     | Three.js, react-three-fiber, drei                                |
+| Backend       | Node.js, Express, TypeScript, Zod                                |
+| Realtime      | Socket.IO, WebRTC                                                |
+| Auth          | JWT (access + refresh), bcrypt                                   |
+| Database      | PostgreSQL 16, Prisma                                            |
+| ML service    | Python 3.11, FastAPI, TensorFlow                                 |
+| Monorepo      | pnpm workspaces, Turborepo                                       |
+| Tooling       | Docker Compose, GitHub Actions, ESLint, Prettier, Vitest, pytest |
 
 ---
 
@@ -159,17 +159,17 @@ signbridge/
 
 All routes mount under `/api`.
 
-| Route | Purpose |
-|---|---|
-| `/api/health` | Liveness + database connectivity check |
-| `/api/auth` | Register, login, refresh, logout |
-| `/api/users` | Profile and per-user settings |
-| `/api/conversations` | Conversation + message history |
-| `/api/sign-samples` | Collected landmark samples + dataset export |
-| `/api/translate` | Text translation |
-| `/api/calls` | Video-call rooms + ICE/TURN config |
-| `/api/emergency` | Contacts, quick phrases, emergency events |
-| `/api/learning` | Lesson progress and sign mastery |
+| Route                | Purpose                                     |
+| -------------------- | ------------------------------------------- |
+| `/api/health`        | Liveness + database connectivity check      |
+| `/api/auth`          | Register, login, refresh, logout            |
+| `/api/users`         | Profile and per-user settings               |
+| `/api/conversations` | Conversation + message history              |
+| `/api/sign-samples`  | Collected landmark samples + dataset export |
+| `/api/translate`     | Text translation                            |
+| `/api/calls`         | Video-call rooms + ICE/TURN config          |
+| `/api/emergency`     | Contacts, quick phrases, emergency events   |
+| `/api/learning`      | Lesson progress and sign mastery            |
 
 ---
 
@@ -178,23 +178,23 @@ All routes mount under `/api`.
 <details>
 <summary><b>apps/api/.env</b></summary><br>
 
-| Variable | Notes |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string used by Prisma |
-| `CORS_ORIGIN` | Allowed origin(s) for the web app |
-| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET` | Required in production; dev fallbacks used if unset |
-| `ACCESS_TOKEN_TTL` / `REFRESH_TOKEN_TTL_DAYS` | Token lifetimes |
-| `TRANSLATION_PROVIDER` | `google-free` (default, keyless), `bhashini`, or `identity` |
-| `BHASHINI_*` | Optional AI4Bharat credentials; falls back to passthrough if unset |
-| `TURN_URL` / `TURN_USERNAME` / `TURN_CREDENTIAL` | Optional TURN server for cross-network calls (STUN always used) |
+| Variable                                         | Notes                                                              |
+| ------------------------------------------------ | ------------------------------------------------------------------ |
+| `DATABASE_URL`                                   | PostgreSQL connection string used by Prisma                        |
+| `CORS_ORIGIN`                                    | Allowed origin(s) for the web app                                  |
+| `JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET`       | Required in production; dev fallbacks used if unset                |
+| `ACCESS_TOKEN_TTL` / `REFRESH_TOKEN_TTL_DAYS`    | Token lifetimes                                                    |
+| `TRANSLATION_PROVIDER`                           | `google-free` (default, keyless), `bhashini`, or `identity`        |
+| `BHASHINI_*`                                     | Optional AI4Bharat credentials; falls back to passthrough if unset |
+| `TURN_URL` / `TURN_USERNAME` / `TURN_CREDENTIAL` | Optional TURN server for cross-network calls (STUN always used)    |
 
 </details>
 
 <details>
 <summary><b>apps/web/.env</b></summary><br>
 
-| Variable | Notes |
-|---|---|
+| Variable              | Notes                                       |
+| --------------------- | ------------------------------------------- |
 | `NEXT_PUBLIC_API_URL` | Base URL of the API, exposed to the browser |
 
 </details>
