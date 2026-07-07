@@ -56,7 +56,7 @@ function AccountSection({
 }) {
   const t = useT();
   const [name, setName] = useState(initialName);
-  const [role, setRole] = useState(initialRole as 'HEARING_USER' | 'DEAF_USER');
+  const [role, setRole] = useState(initialRole as 'HEARING_USER' | 'DEAF_USER' | 'LEARNER');
   const [status, setStatus] = useState<'idle' | 'saving'>('idle');
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +69,7 @@ function AccountSection({
     try {
       const { profile } = await updateProfile(authFetch, name.trim(), role);
       setName(profile.name ?? '');
-      setRole(profile.role);
+      setRole(profile.role as any);
       updateUser({ ...user, name: profile.name, role: profile.role });
       setSuccess(true);
     } catch (err) {
@@ -121,13 +121,14 @@ function AccountSection({
             name="role"
             value={role}
             onChange={(e) => {
-              setRole(e.target.value as 'HEARING_USER' | 'DEAF_USER');
+              setRole(e.target.value as 'HEARING_USER' | 'DEAF_USER' | 'LEARNER');
               setSuccess(false);
             }}
             className={inputClass}
           >
             <option value="HEARING_USER">{t('role.HEARING_USER')}</option>
             <option value="DEAF_USER">{t('role.DEAF_USER')}</option>
+            <option value="LEARNER">{t('role.LEARNER')}</option>
           </select>
         </div>
 
