@@ -22,7 +22,7 @@ export async function loginWithGoogle(credential: string): Promise<AuthTokens> {
     if (!res.ok) {
       throw new Error(`Google API returned ${res.status}`);
     }
-    payload = await res.json();
+    payload = (await res.json()) as Record<string, any>;
   } catch (err) {
     console.error('Google Auth Verify Error:', err);
     throw new HttpError(401, 'INVALID_GOOGLE_TOKEN', 'Google authentication failed.');
