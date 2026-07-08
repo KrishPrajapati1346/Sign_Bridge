@@ -33,7 +33,12 @@ export function TourProvider() {
       const needsTour = localStorage.getItem('signbridge_needs_tour');
       if (needsTour === 'true') {
         // Wait briefly for dashboard to render before showing tour
-        setTimeout(() => setRun(true), 500);
+        setTimeout(() => {
+          setRun(true);
+          // Consume the flag immediately so it never runs again,
+          // even if the user refreshes or closes the tab without finishing.
+          localStorage.removeItem('signbridge_needs_tour');
+        }, 500);
       }
     }
   }, [pathname]);

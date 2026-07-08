@@ -25,8 +25,12 @@ export function NavDrawer({
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {
+      document.body.style.overflow = '';
+      return;
+    }
 
+    document.body.style.overflow = 'hidden';
     previouslyFocused.current = document.activeElement as HTMLElement | null;
     const panel = panelRef.current;
     const focusables = panel ? Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE)) : [];
@@ -56,6 +60,7 @@ export function NavDrawer({
 
     document.addEventListener('keydown', onKeyDown);
     return () => {
+      document.body.style.overflow = '';
       document.removeEventListener('keydown', onKeyDown);
       // Restore focus to the trigger when closing.
       previouslyFocused.current?.focus();
@@ -68,7 +73,7 @@ export function NavDrawer({
     <div className="lg:hidden">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-ink/40 backdrop-blur-sm"
+        className="fixed inset-0 z-[100] bg-ink/40 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -79,7 +84,7 @@ export function NavDrawer({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="fixed inset-y-0 left-0 z-50 flex w-[85%] max-w-sm animate-fade-up flex-col rounded-r-[2rem] bg-surface/80 backdrop-blur-3xl border-r border-white/10 shadow-[20px_0_60px_-15px_rgba(0,0,0,0.3)] outline-none"
+        className="fixed inset-y-0 left-0 z-[100] flex w-[85%] max-w-sm animate-fade-right flex-col rounded-r-[2rem] bg-surface/80 backdrop-blur-3xl border-r border-white/10 shadow-[20px_0_60px_-15px_rgba(0,0,0,0.3)] outline-none"
       >
         {children}
       </div>
