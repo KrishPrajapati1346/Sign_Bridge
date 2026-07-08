@@ -132,21 +132,11 @@ function Wordmark() {
       href="/dashboard"
       className="group flex items-center gap-2 rounded font-display text-lg font-semibold tracking-tight text-ink"
     >
-      <span
-        aria-hidden="true"
-        className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-aurora text-white shadow-glow transition group-hover:scale-105"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          className="h-4 w-4"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-        >
-          <path d="M4 8v8M20 8v8" strokeLinecap="round" />
-          <path d="M4 12h16" strokeLinecap="round" />
-        </svg>
-      </span>
+      <img
+        src="/logo.png"
+        alt="SignBridge Logo"
+        className="h-7 w-7 rounded-lg shadow-glow transition group-hover:scale-105 object-cover"
+      />
       SignBridge
     </Link>
   );
