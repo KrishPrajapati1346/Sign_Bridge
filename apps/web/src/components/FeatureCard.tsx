@@ -20,38 +20,40 @@ export function FeatureCard({
   comingSoon?: boolean;
 }) {
   const body = (
-    <>
-      <div className="flex items-start justify-between gap-3">
-        <span className="icon-tile h-11 w-11 transition group-hover:scale-105">
-          <Icon aria-hidden="true" className="h-5 w-5" />
+    <div className="flex h-full flex-col justify-between">
+      <div className="flex items-start justify-between gap-3 mb-6">
+        <span className="icon-tile h-14 w-14 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3 bg-gradient-to-br from-signal/20 to-iris/20 text-signal shadow-[0_0_15px_rgba(0,112,243,0.2)]">
+          <Icon aria-hidden="true" className="h-7 w-7" />
         </span>
         {comingSoon && (
-          <span className="rounded-full border border-line bg-canvas px-2.5 py-1 text-xs font-medium text-muted">
+          <span className="rounded-full border border-white/20 bg-surface/50 backdrop-blur-md px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-muted">
             Coming soon
           </span>
         )}
         {href && !comingSoon && (
           <ArrowRight
             aria-hidden="true"
-            className="h-5 w-5 text-muted transition group-hover:translate-x-1 group-hover:text-signalInk"
+            className="h-6 w-6 text-muted/40 transition-all duration-300 group-hover:translate-x-2 group-hover:text-signal"
           />
         )}
       </div>
-      <h3 className="mt-4 font-display text-lg font-semibold text-ink">{title}</h3>
-      <p className="mt-1 text-sm text-muted">{description}</p>
-    </>
+      <div>
+        <h3 className="font-display text-xl font-bold text-ink mb-2 group-hover:text-signal transition-colors">{title}</h3>
+        <p className="text-[15px] font-medium text-muted leading-relaxed">{description}</p>
+      </div>
+    </div>
   );
 
   if (href && !comingSoon) {
     return (
-      <Link href={href} className="card card-hover group flex h-full flex-col p-5">
+      <Link href={href} className="card card-hover group flex h-full flex-col p-8">
         {body}
       </Link>
     );
   }
 
   return (
-    <div className="card flex h-full flex-col p-5" aria-disabled={comingSoon || undefined}>
+    <div className="card group flex h-full flex-col p-8 opacity-70 grayscale-[0.5]">
       {body}
     </div>
   );

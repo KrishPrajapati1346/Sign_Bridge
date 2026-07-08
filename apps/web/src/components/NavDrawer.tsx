@@ -79,7 +79,7 @@ export function NavDrawer({
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className="fixed inset-y-0 left-0 z-50 flex w-[80%] max-w-xs animate-fade-up flex-col rounded-r-2xl bg-surface shadow-lift outline-none"
+        className="fixed inset-y-0 left-0 z-50 flex w-[85%] max-w-sm animate-fade-up flex-col rounded-r-[2rem] bg-surface/80 backdrop-blur-3xl border-r border-white/10 shadow-[20px_0_60px_-15px_rgba(0,0,0,0.3)] outline-none"
       >
         {children}
       </div>

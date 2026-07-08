@@ -62,21 +62,11 @@ export default function RegisterPage() {
           href="/"
           className="group inline-flex items-center gap-2 font-display text-lg font-semibold tracking-tight text-ink"
         >
-          <span
-            aria-hidden="true"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-aurora text-white shadow-glow transition group-hover:scale-105"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <path d="M4 8v8M20 8v8" strokeLinecap="round" />
-              <path d="M4 12h16" strokeLinecap="round" />
-            </svg>
-          </span>
+          <img 
+            src="/logo.png" 
+            alt="SignBridge Logo" 
+            className="w-8 h-8 rounded-lg shadow-glow transition group-hover:scale-105 object-cover"
+          />
           SignBridge
         </Link>
       </div>
@@ -225,6 +215,12 @@ export default function RegisterPage() {
             )}
           </div>
 
+          <p className="text-[13px] text-muted text-center mt-2 mb-2 leading-relaxed">
+            By continuing, you agree to our{' '}
+            <Link href="/terms" className="underline hover:text-ink transition-colors">Terms of Service</Link>
+            {' '}and{' '}
+            <Link href="/privacy" className="underline hover:text-ink transition-colors">Privacy Policy</Link>.
+          </p>
           <button
             type="submit"
             disabled={submitting}

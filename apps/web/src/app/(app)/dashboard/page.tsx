@@ -71,15 +71,16 @@ export default function DashboardPage() {
         >
           {t('dash.modules')}
         </h2>
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {MODULES.map((m) => (
-            <FeatureCard
-              key={m.href}
-              icon={m.icon}
-              title={t(m.titleKey)}
-              description={t(m.descKey)}
-              href={m.href}
-            />
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 auto-rows-[250px]">
+          {MODULES.map((m, idx) => (
+            <div key={m.href} className={idx === 0 || idx === 3 ? 'lg:col-span-2' : ''}>
+              <FeatureCard
+                icon={m.icon}
+                title={t(m.titleKey)}
+                description={t(m.descKey)}
+                href={m.href}
+              />
+            </div>
           ))}
         </div>
       </section>
@@ -98,25 +99,25 @@ function StartConversationHero() {
   return (
     <section
       aria-labelledby="hero-heading"
-      className="relative overflow-hidden rounded-3xl border border-line bg-ink px-5 py-8 sm:px-10 sm:py-12 text-canvas shadow-lift"
+      className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-surface/60 backdrop-blur-3xl px-8 py-10 sm:px-12 sm:py-16 shadow-[0_0_40px_rgba(0,0,0,0.1)] dark:shadow-[0_0_40px_rgba(255,255,255,0.05)]"
     >
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-hero-mesh" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-hero-mesh opacity-30 mix-blend-screen" />
       <BridgeMotif />
-      <div className="relative max-w-xl animate-fade-up">
-        <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-canvas/90 backdrop-blur-sm">
+      <div className="relative z-10 max-w-xl animate-fade-up">
+        <span className="chip mb-6">
           {t('dash.hero.kicker')}
         </span>
-        <h2 id="hero-heading" className="mt-4 font-display text-3xl font-semibold sm:text-5xl">
+        <h2 id="hero-heading" className="mt-4 font-display text-4xl font-bold sm:text-5xl text-ink">
           {t('dash.hero.title')}
         </h2>
-        <p className="mt-3 max-w-md text-canvas/80">{t('dash.hero.body')}</p>
-        <div className="mt-7 flex flex-wrap items-center gap-3">
+        <p className="mt-4 max-w-md text-lg text-muted font-medium">{t('dash.hero.body')}</p>
+        <div className="mt-8 flex flex-wrap items-center gap-4">
           <Link
             href="/live"
-            className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-white px-5 py-2.5 font-semibold text-ink shadow-soft transition hover:-translate-y-0.5 hover:shadow-lift"
+            className="btn-primary"
           >
             {t('dash.hero.cta')}
-            <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            <ArrowRight aria-hidden="true" className="h-5 w-5" />
           </Link>
         </div>
       </div>

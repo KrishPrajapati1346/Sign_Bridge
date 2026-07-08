@@ -5,39 +5,35 @@
 :root {
   --font-sans: ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-sans);
-  /* Interface scale, driven by the user's text-size preference. */
   --ui-scale: 1;
 
-  /* Light Theme Colors (RGB values for Tailwind opacity support) */
-  --color-ink: 21 24 43; /* #15182b */
-  --color-canvas: 246 245 241; /* #f6f5f1 */
-  --color-signal: 47 109 246; /* #2f6df6 */
-  --color-beacon: 255 90 60; /* #ff5a3c */
-  --color-surface: 255 255 255; /* #ffffff */
-  --color-signal-ink: 31 79 208; /* #1f4fd0 */
-  --color-bridge: 15 157 138; /* #0f9d8a */
-  --color-iris: 109 94 252; /* #6d5efc */
-  --color-line: 228 226 219; /* #e4e2db */
-  --color-muted: 91 94 114; /* #5b5e72 */
+  /* Modern Premium Light Theme */
+  --color-ink: 15 15 20;
+  --color-canvas: 250 250 252;
+  --color-signal: 0 112 243;
+  --color-beacon: 255 60 40;
+  --color-surface: 255 255 255;
+  --color-signal-ink: 0 90 200;
+  --color-bridge: 10 200 160;
+  --color-iris: 138 43 226;
+  --color-line: 230 230 230;
+  --color-muted: 120 120 130;
 }
 
 .dark {
-  /* Dark Theme Colors */
-  --color-ink: 255 255 255; /* #ffffff */
-  --color-canvas: 18 18 18; /* #121212 */
-  --color-signal: 79 133 248; /* #4f85f8 */
-  --color-beacon: 255 117 89; /* #ff7559 */
-  --color-surface: 30 30 30; /* #1e1e1e */
-  --color-signal-ink: 123 157 250; /* #7b9dfa */
-  --color-bridge: 34 184 164; /* #22b8a4 */
-  --color-iris: 133 120 252; /* #8578fc */
-  --color-line: 51 51 51; /* #333333 */
-  --color-muted: 161 163 177; /* #a1a3b1 */
+  /* OLED Dark Theme */
+  --color-ink: 255 255 255;
+  --color-canvas: 5 5 5;
+  --color-signal: 50 150 255;
+  --color-beacon: 255 80 80;
+  --color-surface: 20 20 22;
+  --color-signal-ink: 100 180 255;
+  --color-bridge: 30 230 190;
+  --color-iris: 180 100 255;
+  --color-line: 45 45 50;
+  --color-muted: 150 150 160;
 }
 
-/* Scaling the root font-size scales every rem-based size app-wide, so the
-   text-size preference visibly affects the whole interface, not just body copy.
-   NORMAL leaves it at the 16px baseline. */
 html {
   font-size: calc(100% * var(--ui-scale));
 }
@@ -51,148 +47,94 @@ html[data-text-scale='LARGER'] {
 }
 
 body {
-  @apply bg-canvas text-ink antialiased;
+  @apply bg-canvas text-ink antialiased selection:bg-signal selection:text-white;
   font-family: var(--font-sans);
-  font-size: 1rem; /* >= 16px baseline */
-  line-height: 1.5;
-  /* Subtle aurora mesh so the warm canvas never reads as flat grey. */
-  background-image:
-    radial-gradient(48% 38% at 8% 0%, rgba(47, 109, 246, 0.08) 0%, transparent 60%),
-    radial-gradient(42% 36% at 100% 6%, rgba(109, 94, 252, 0.07) 0%, transparent 60%),
-    radial-gradient(50% 45% at 90% 100%, rgba(15, 157, 138, 0.07) 0%, transparent 60%);
+  font-size: 1rem;
+  line-height: 1.6;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(var(--color-iris)/0.08), transparent 40%),
+    radial-gradient(circle at 85% 30%, rgba(var(--color-signal)/0.08), transparent 40%);
   background-attachment: fixed;
 }
 
-h1,
-h2,
-h3,
-h4 {
+h1, h2, h3, h4 {
   font-family: var(--font-display);
+  letter-spacing: -0.03em;
 }
 
-/* -------------------------------------------------------------------------
-   Reusable visual language (vibrant + modern). Components opt in via these
-   classes so the look stays consistent app-wide. All of them degrade safely
-   under high-contrast and reduced-motion (see overrides further down).
-   ------------------------------------------------------------------------- */
 @layer components {
-  /* Surface card: soft shadow, hairline, and a gentle lift on hover. */
+  /* Glass panel replacing basic cards */
   .card {
-    @apply rounded-2xl border border-line bg-surface shadow-soft transition duration-200;
+    @apply relative overflow-hidden rounded-[2rem] border border-white/10 bg-surface/90 backdrop-blur-lg shadow-lg transition-all duration-300;
   }
+  
   .card-hover {
-    @apply hover:-translate-y-0.5 hover:border-signal hover:shadow-lift;
+    @apply hover:-translate-y-1 hover:shadow-xl;
   }
 
-  /* Gradient text for headings / emphasis. */
   .text-gradient {
-    @apply bg-aurora bg-clip-text text-transparent;
-    background-size: 200% 200%;
+    @apply bg-gradient-to-br from-signal via-iris to-bridge bg-clip-text text-transparent;
   }
 
-  /* Primary action: aurora gradient with a coloured glow. */
   .btn-primary {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-aurora bg-[length:200%_200%] px-5 py-2.5 font-medium text-white shadow-glow transition duration-200 hover:bg-right hover:shadow-lift focus-visible:bg-right;
+    @apply relative inline-flex min-h-14 items-center justify-center gap-2 rounded-full bg-black px-8 py-3.5 font-bold tracking-wide text-white shadow-lg transition-all duration-300 hover:scale-[1.02] hover:shadow-xl focus:ring-4 focus:ring-signal/30;
+  }
+  
+  .dark .btn-primary {
+    @apply bg-white text-black hover:shadow-xl;
   }
 
-  /* Secondary action: clean surface button. */
   .btn-secondary {
-    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-line bg-surface px-5 py-2.5 font-medium text-ink shadow-soft transition duration-200 hover:-translate-y-0.5 hover:border-signal hover:shadow-lift;
+    @apply inline-flex min-h-14 items-center justify-center gap-2 rounded-full border border-line bg-surface/80 backdrop-blur-md px-8 py-3.5 font-bold tracking-wide text-ink shadow-sm transition-all duration-300 hover:bg-surface hover:border-signal/50 focus:ring-4 focus:ring-signal/30;
   }
 
-  /* Pill chip used for kickers / tags. */
   .chip {
-    @apply inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-wider text-signalInk;
+    @apply inline-flex items-center gap-2 rounded-full border border-white/20 bg-surface/80 backdrop-blur-md px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-ink shadow-inner;
   }
 
-  /* Frosted-glass bar (nav / sticky headers). */
   .glass {
-    @apply border-line bg-surface backdrop-blur-md backdrop-saturate-150;
+    @apply border-b border-line/50 bg-canvas/80 backdrop-blur-lg backdrop-saturate-150;
   }
 
-  /* Icon tile with a soft aurora wash. */
   .icon-tile {
-    @apply inline-flex items-center justify-center rounded-xl bg-aurora-soft text-signalInk ring-1 ring-inset ring-signal;
+    @apply inline-flex items-center justify-center rounded-2xl bg-gradient-to-br from-white/10 to-transparent backdrop-blur-sm border border-white/20 text-ink shadow-md transition-transform duration-300 hover:scale-105;
   }
 }
 
-/* High-contrast: strip gradients, translucency, and blur for crisp edges. */
-html[data-contrast='high'] body {
-  background-image: none;
+@keyframes textGradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+html[data-contrast='high'] body {
+  background-image: none !important;
+}
+
 html[data-contrast='high'] .text-gradient {
   -webkit-text-fill-color: currentColor;
   @apply bg-none text-ink;
 }
+
 html[data-contrast='high'] .btn-primary {
   @apply bg-none bg-ink text-white shadow-none;
 }
-html[data-contrast='high'] .glass {
-  @apply bg-surface backdrop-blur-none backdrop-saturate-100;
-}
-html[data-contrast='high'] .icon-tile {
-  @apply bg-canvas;
+
+html[data-reduce-motion='on'] * {
+  animation: none !important;
+  transition: none !important;
 }
 
-/* Reduced motion (settings or OS): no transforms/animation on the new classes. */
-html[data-reduce-motion='on'] .card-hover:hover,
-html[data-reduce-motion='on'] .btn-primary:hover,
-html[data-reduce-motion='on'] .btn-secondary:hover {
-  transform: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .card-hover:hover,
-  .btn-primary:hover,
-  .btn-secondary:hover {
-    transform: none;
-  }
-}
-
-/* A consistent, high-visibility focus ring on every interactive element
-   (>= 3:1 contrast). Components may layer their own, but this is the floor. */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 3px solid #2f6df6;
+  outline: 3px solid #0070f3;
   outline-offset: 2px;
-  border-radius: 2px;
-}
-
-/* High-contrast mode: pure-white surfaces, darker hairlines and secondary text,
-   and a thicker focus ring. Keys off utility classes used consistently in the
-   shell components plus a few token overrides. */
-html[data-contrast='high'] body {
-  @apply bg-white text-ink;
-}
-
-html[data-contrast='high'] .border-line,
-html[data-contrast='high'] .border {
-  border-color: #15182b !important;
-}
-
-html[data-contrast='high'] .text-muted {
-  color: #15182b !important;
-}
-
-html[data-contrast='high']
-  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline-width: 4px;
-  outline-offset: 3px;
-}
-
-/* Respect users who prefer reduced motion — a baseline for an
-   accessibility-first product. */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* Mirror the same behaviour when the user enables reduce-motion in settings. */
-html[data-reduce-motion='on'] *,
-html[data-reduce-motion='on'] *::before,
-html[data-reduce-motion='on'] *::after {
-  animation-duration: 0.01ms !important;
-  transition-duration: 0.01ms !important;
+  border-radius: 4px;
 }

@@ -18,7 +18,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const t = useT();
 
   return (
-    <div className="min-h-screen pb-16 lg:pb-0 lg:pl-64">
+    <div className="min-h-screen pb-16 lg:pb-4 lg:pl-[20rem] lg:pt-4 lg:pr-4">
       <CallRinger />
       
       {/* Mobile Top Header */}
@@ -35,18 +35,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-30 lg:flex lg:w-64 lg:flex-col lg:border-r lg:bg-canvas lg:py-6">
-        <div className="flex items-center px-6">
+      {/* Desktop Sidebar (Floating Glass Panel) */}
+      <aside className="hidden lg:fixed lg:inset-y-4 lg:left-4 lg:z-30 lg:flex lg:w-72 lg:flex-col lg:rounded-[2rem] lg:border lg:border-white/10 lg:bg-surface/60 lg:backdrop-blur-3xl lg:shadow-2xl lg:py-8 transition-all duration-500 hover:bg-surface/80">
+        <div className="flex items-center px-8">
           <Wordmark />
         </div>
         <nav
           aria-label="Primary"
-          className="mt-8 flex flex-1 flex-col gap-1 overflow-y-auto overscroll-contain px-3"
+          className="mt-10 flex flex-1 flex-col gap-2 overflow-y-auto overscroll-contain px-5"
         >
           <NavLinks pathname={pathname} />
         </nav>
-        <div className="border-t border-line px-3 pt-4">
+        <div className="border-t border-white/10 px-5 pt-6 mt-4">
           <UserChip />
         </div>
       </aside>
@@ -164,13 +164,13 @@ function NavLinks({ pathname, onNavigate }: { pathname: string; onNavigate?: () 
           const active = pathname === href || pathname.startsWith(`${href}/`);
           const emergency = emphasis === 'emergency';
           const className = emergency
-            ? `flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition ${
-                active ? 'bg-beacon text-white shadow-soft' : 'text-beacon hover:bg-beacon/10'
+            ? `flex min-h-12 items-center gap-4 rounded-2xl px-4 py-3 text-sm font-bold transition-all duration-300 ${
+                active ? 'bg-beacon text-white shadow-lg scale-105' : 'text-beacon hover:bg-beacon/10 hover:scale-[1.02]'
               }`
-            : `flex min-h-11 items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${
+            : `flex min-h-12 items-center gap-4 rounded-2xl px-4 py-3 text-sm font-bold transition-all duration-300 ${
                 active
-                  ? 'bg-aurora-soft text-signalInk ring-1 ring-inset ring-signal/20'
-                  : 'text-ink hover:bg-canvas'
+                  ? 'bg-gradient-to-r from-signal/20 to-iris/20 text-signalInk ring-1 ring-inset ring-white/10 shadow-lg scale-105'
+                  : 'text-ink hover:bg-white/5 hover:shadow-md hover:scale-[1.02]'
               }`;
           return (
             <Link
