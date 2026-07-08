@@ -64,7 +64,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <X aria-hidden="true" className="h-6 w-6" />
           </button>
         </div>
-        <nav aria-label="Primary" className="flex flex-1 flex-col gap-1 px-3 py-4">
+        <nav aria-label="Primary" className="flex flex-1 flex-col gap-1 px-3 py-4 overflow-y-auto overscroll-contain">
           <NavLinks pathname={pathname} onNavigate={() => setDrawerOpen(false)} />
         </nav>
         <div className="border-t border-line px-3 py-4">
