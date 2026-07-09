@@ -36,6 +36,7 @@ export default function HomeScreen() {
         source={{ uri: 'https://sign-bridge-web.vercel.app' }}
         style={styles.webview}
         onNavigationStateChange={(navState) => setCanGoBack(navState.canGoBack)}
+        onPermissionRequest={(event) => event.request.grant()}
         allowsInlineMediaPlayback={true}
         mediaPlaybackRequiresUserAction={false}
         javaScriptEnabled={true}
